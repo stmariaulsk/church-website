@@ -108,7 +108,19 @@
         "value": "elkras"
       }
     ],
-    "items": []
+    "items": [
+      {
+        "id": "mmgu724k36h5h7hd1r4",
+        "title": "Новости",
+        "category": "parish",
+        "badge": "event",
+        "date": "2026-03-07",
+        "excerpt": "Fhhh",
+        "fullText": "Fjuuiassdjk",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQI-SaYWlXmVicHWYEEpRgrmFir507tWQk3pA&s",
+        "link": ""
+      }
+    ]
   },
   "materials": {
     "title": "Материалы",
