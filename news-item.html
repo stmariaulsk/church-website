@@ -1,0 +1,377 @@
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <style>
+                body {
+                  background-color: white; /* Ensure the iframe has a white background */
+                }
+
+                
+              </style>
+                        </head>
+                        <body>
+                            <!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Новость | Евангелическо-лютеранская церковь Святой Марии</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --color-primary: #1a2c42;
+            --color-primary-light: #2c4a6b;
+            --color-accent: #c5a059;
+            --color-bg: #fdfbf7;
+            --color-bg-alt: #f4f1ea;
+            --color-text: #333333;
+            --color-text-light: #666666;
+            --color-white: #ffffff;
+            --font-heading: 'Cormorant Garamond', serif;
+            --font-body: 'Montserrat', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-body); background-color: var(--color-bg); color: var(--color-text); line-height: 1.7; }
+        h1, h2, h3 { font-family: var(--font-heading); font-weight: 600; color: var(--color-primary); }
+
+        .loading {
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; font-size: 1.2rem; color: var(--color-text-light);
+        }
+
+        .error {
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; text-align: center; padding: 2rem;
+        }
+        .error i { font-size: 3rem; color: #c41e3a; margin-bottom: 1rem; }
+
+        header {
+            background: var(--color-primary); padding: 1rem 0;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .header-content {
+            max-width: 1200px; margin: 0 auto; padding: 0 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-family: var(--font-heading); font-size: 1.5rem;
+            font-weight: 700; color: var(--color-white); text-decoration: none;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .logo i { color: var(--color-accent); }
+        .back-link {
+            color: var(--color-white); text-decoration: none;
+            display: flex; align-items: center; gap: 0.5rem;
+            transition: all 0.3s;
+        }
+        .back-link:hover { color: var(--color-accent); }
+
+        .news-article {
+            max-width: 800px; margin: 3rem auto; padding: 0 2rem;
+        }
+
+        .news-header { margin-bottom: 2rem; }
+        .news-category {
+            display: inline-block; background: var(--color-accent);
+            color: var(--color-white); padding: 0.3rem 1rem;
+            border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+            text-transform: uppercase; margin-bottom: 1rem;
+        }
+        .news-category.elkras { background: #2c5282; }
+        .news-category.important { background: #c41e3a; }
+        .news-category.event { background: var(--color-primary); }
+
+        .news-title {
+            font-size: 2.5rem; line-height: 1.2; margin-bottom: 1rem;
+        }
+
+        .news-meta {
+            display: flex; gap: 2rem; color: var(--color-text-light);
+            font-size: 0.9rem; flex-wrap: wrap;
+        }
+        .news-meta span { display: flex; align-items: center; gap: 0.5rem; }
+
+        .news-image {
+            width: 100%; height: 400px; object-fit: cover;
+            border-radius: 8px; margin: 2rem 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .news-content {
+            font-size: 1.1rem; line-height: 1.8;
+        }
+        .news-content p { margin-bottom: 1.5rem; }
+        .news-content h2 {
+            font-size: 1.8rem; margin: 2rem 0 1rem;
+        }
+        .news-content h3 {
+            font-size: 1.5rem; margin: 1.5rem 0 0.8rem;
+        }
+        .news-content ul, .news-content ol {
+            margin: 1rem 0 1rem 2rem;
+        }
+        .news-content li { margin-bottom: 0.5rem; }
+        .news-content blockquote {
+            border-left: 4px solid var(--color-accent);
+            padding-left: 1.5rem; margin: 2rem 0;
+            font-style: italic; color: var(--color-text-light);
+        }
+
+        .news-footer {
+            margin-top: 3rem; padding-top: 2rem;
+            border-top: 2px solid var(--color-bg-alt);
+        }
+        .share-buttons {
+            display: flex; gap: 1rem; margin-top: 1rem;
+        }
+        .share-btn {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--color-bg-alt); display: flex;
+            align-items: center; justify-content: center;
+            color: var(--color-primary); transition: all 0.3s;
+        }
+        .share-btn:hover {
+            background: var(--color-accent); color: var(--color-white);
+        }
+
+        .back-button {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: var(--color-primary); color: var(--color-white);
+            padding: 0.8rem 2rem; border-radius: 4px;
+            text-decoration: none; font-weight: 600;
+            transition: all 0.3s; margin-top: 2rem;
+        }
+        .back-button:hover {
+            background: var(--color-accent); transform: translateX(-5px);
+        }
+
+        footer {
+            background: var(--color-primary); color: var(--color-white);
+            padding: 3rem 2rem; margin-top: 4rem; text-align: center;
+        }
+        footer p { opacity: 0.8; font-size: 0.9rem; }
+
+        @media (max-width: 768px) {
+            .news-title { font-size: 1.8rem; }
+            .news-image { height: 250px; }
+            .news-meta { gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <i class="fas fa-church"></i>
+                <span>Св. Мария</span>
+            </a>
+            <a href="index.html#news" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                <span>Все новости</span>
+            </a>
+        </div>
+    </header>
+
+    <div id="loading" class="loading">
+        <i class="fas fa-spinner fa-spin" style="margin-right: 1rem;"></i>
+        Загрузка новости...
+    </div>
+
+    <div id="error" class="error" style="display: none;">
+        <div>
+            <i class="fas fa-exclamation-triangle"></i>
+            <h2>Новость не найдена</h2>
+            <p style="margin: 1rem 0;">К сожалению, такая новость не существует или была удалена.</p>
+            <a href="index.html#news" class="back-button">
+                <i class="fas fa-arrow-left"></i> Вернуться к новостям
+            </a>
+        </div>
+    </div>
+
+    <article id="news-article" class="news-article" style="display: none;">
+        <div class="news-header">
+            <span id="news-category" class="news-category"></span>
+            <h1 id="news-title" class="news-title"></h1>
+            <div class="news-meta">
+                <span><i class="far fa-calendar"></i> <span id="news-date"></span></span>
+            </div>
+        </div>
+
+        <img id="news-image" class="news-image" src="" alt="" style="display: none;">
+
+        <div id="news-content" class="news-content"></div>
+
+        <div class="news-footer">
+            <h3>Поделиться:</h3>
+            <div class="share-buttons">
+                <a href="#" class="share-btn" onclick="shareToVK()" title="ВКонтакте">
+                    <i class="fab fa-vk"></i>
+                </a>
+                <a href="#" class="share-btn" onclick="shareToTelegram()" title="Telegram">
+                    <i class="fab fa-telegram"></i>
+                </a>
+                <a href="#" class="share-btn" onclick="shareToWhatsapp()" title="WhatsApp">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+            </div>
+        </div>
+
+        <a href="index.html#news" class="back-button">
+            <i class="fas fa-arrow-left"></i> Вернуться к новостям
+        </a>
+    </article>
+
+    <footer>
+        <p id="footer-copyright"></p>
+    </footer>
+
+    <script>
+        let currentNews = null;
+
+        // --- LOAD NEWS ---
+        async function loadNews() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const newsId = urlParams.get('id');
+
+            if (!newsId) {
+                showError();
+                return;
+            }
+
+            try {
+                const response = await fetch('site-data.json');
+                if (!response.ok) throw new Error('File not found');
+                const data = await response.json();
+
+                const news = data.news.items.find(n => n.id === newsId);
+                
+                if (!news) {
+                    showError();
+                    return;
+                }
+
+                currentNews = news;
+                renderNews(news);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('news-article').style.display = 'block';
+                document.title = `${news.title} | Церковь Святой Марии`;
+
+            } catch (error) {
+                console.error('Error loading news:', error);
+                showError();
+            }
+        }
+
+        function renderNews(news) {
+            // Category
+            const categoryEl = document.getElementById('news-category');
+            const categoryNames = {
+                parish: 'Новости прихода',
+                elkras: 'Новости ЕЛЦ'
+            };
+            categoryEl.textContent = categoryNames[news.category] || news.category;
+            categoryEl.className = `news-category ${news.badge || news.category}`;
+
+            // Title
+            document.getElementById('news-title').textContent = news.title;
+
+            // Date
+            document.getElementById('news-date').textContent = formatDate(news.date);
+
+            // Image
+            const imageEl = document.getElementById('news-image');
+            if (news.image) {
+                imageEl.src = news.image;
+                imageEl.alt = news.title;
+                imageEl.style.display = 'block';
+            }
+
+            // Content
+            const contentEl = document.getElementById('news-content');
+            contentEl.innerHTML = news.fullText || news.excerpt;
+
+            // Footer
+            document.getElementById('footer-copyright').textContent = 
+                `© ${new Date().getFullYear()} Евангелическо-лютеранская церковь Святой Марии`;
+        }
+
+        function showError() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'flex';
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            return new Date(dateStr).toLocaleDateString('ru-RU', {
+                day: 'numeric', month: 'long', year: 'numeric'
+            });
+        }
+
+        // --- SHARE FUNCTIONS ---
+        function shareToVK() {
+            if (!currentNews) return;
+            const url = encodeURIComponent(window.location.href);
+            const title = encodeURIComponent(currentNews.title);
+            window.open(`https://vk.com/share.php?url=${url}&title=${title}`, '_blank');
+        }
+
+        function shareToTelegram() {
+            if (!currentNews) return;
+            const url = encodeURIComponent(window.location.href);
+            const title = encodeURIComponent(currentNews.title);
+            window.open(`https://t.me/share/url?url=${url}&text=${title}`, '_blank');
+        }
+
+        function shareToWhatsapp() {
+            if (!currentNews) return;
+            const url = encodeURIComponent(window.location.href);
+            const title = encodeURIComponent(currentNews.title);
+            window.open(`https://wa.me/?text=${title}%20${url}`, '_blank');
+        }
+
+        // --- INIT ---
+        loadNews();
+    </script>
+</body>
+</html>
+
+
+
+              <script>
+                              news: {
+    title: 'Новость',
+    fields: [
+        { name: 'title', label: 'Заголовок', type: 'text', required: true },
+        { name: 'category', label: 'Категория', type: 'select', options: [{value: 'parish', label: 'Приход'}, {value: 'elkras', label: 'ЕЛЦ'}] },
+        { name: 'badge', label: 'Бейдж', type: 'select', options: [{value: '', label: 'Нет'}, {value: 'important', label: 'Важно'}, {value: 'event', label: 'Событие'}, {value: 'elkras', label: 'ЕЛЦ'}] },
+        { name: 'date', label: 'Дата', type: 'date', required: true },
+        { name: 'image', label: 'Изображение (URL)', type: 'text' },
+        { name: 'excerpt', label: 'Краткое описание (для превью)', type: 'textarea', required: true },
+        { name: 'fullText', label: 'Полный текст новости', type: 'textarea', required: true },
+        { name: 'link', label: 'Внешняя ссылка (если есть)', type: 'url' }
+    ]
+}
+
+// Было:
+<a href="${item.link || '#'}" class="news-link">${item.linkText || 'Читать далее'} <i class="fas fa-arrow-right"></i></a>
+
+// Стало:
+<a href="news-item.html?id=${item.id}" class="news-link">
+    Читать далее <i class="fas fa-arrow-right"></i>
+</a>
+
+
+              </script>
+                        </body>
+                        </html>
+                    

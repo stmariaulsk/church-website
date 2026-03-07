@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Евангелическо-лютеранская церковь | Ульяновск</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --color-primary: #1a2c42;
+            --color-primary-light: #2c4a6b;
+            --color-accent: #c5a059;
+            --color-accent-hover: #e0b86a;
+            --color-bg: #fdfbf7;
+            --color-bg-alt: #f4f1ea;
+            --color-text: #333333;
+            --color-text-light: #666666;
+            --color-white: #ffffff;
+            --font-heading: 'Cormorant Garamond', serif;
+            --font-body: 'Montserrat', sans-serif;
+            --spacing-md: 2rem;
+            --spacing-lg: 4rem;
+            --spacing-xl: 8rem;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.15);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: var(--font-body); background-color: var(--color-bg); color: var(--color-text); line-height: 1.7; overflow-x: hidden; }
+        h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); font-weight: 600; line-height: 1.2; color: var(--color-primary); }
+        a { text-decoration: none; color: inherit; transition: var(--transition); }
+        ul { list-style: none; }
+        img { max-width: 100%; height: auto; display: block; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 var(--spacing-md); }
+        .section-padding { padding: var(--spacing-xl) 0; }
+        .text-center { text-align: center; }
+        .text-accent { color: var(--color-accent); }
+
+        .btn {
+            display: inline-block; padding: 1rem 2.5rem; font-family: var(--font-body);
+            font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem;
+            border: 2px solid transparent; cursor: pointer; transition: var(--transition);
+        }
+        .btn-primary { background-color: var(--color-primary); color: var(--color-white); }
+        .btn-primary:hover { background-color: var(--color-accent); border-color: var(--color-accent); transform: translateY(-2px); }
+        .btn-outline { background-color: transparent; border-color: var(--color-white); color: var(--color-white); }
+        .btn-outline:hover { background-color: var(--color-white); color: var(--color-primary); }
+        .btn-accent { background-color: var(--color-accent); color: var(--color-white); }
+        .btn-accent:hover { background-color: var(--color-accent-hover); transform: translateY(-2px); }
+
+        /* Header */
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            transition: var(--transition); padding: 1.5rem 0;
+        }
+        header.scrolled {
+            background-color: rgba(26, 44, 66, 0.95); backdrop-filter: blur(10px);
+            padding: 1rem 0; box-shadow: var(--shadow-md);
+        }
+        .nav-container { display: flex; justify-content: space-between; align-items: center; }
+        .logo {
+            font-family: var(--font-heading); font-size: 1.8rem; font-weight: 700;
+            color: var(--color-white); display: flex; align-items: center; gap: 10px;
+        }
+        .logo i { color: var(--color-accent); }
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-links a { color: var(--color-white); font-weight: 500; font-size: 0.95rem; position: relative; }
+        .nav-links a::after {
+            content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px;
+            background-color: var(--color-accent); transition: var(--transition);
+        }
+        .nav-links a:hover::after { width: 100%; }
+        .mobile-toggle { display: none; color: var(--color-white); font-size: 1.5rem; cursor: pointer; }
+
+        /* Hero */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(26, 44, 66, 0.6), rgba(26, 44, 66, 0.4)), url('') center/cover no-repeat;
+            display: flex; align-items: center; justify-content: center;
+            text-align: center; color: var(--color-white); position: relative;
+        }
+        .hero-content { max-width: 800px; padding: 0 1rem; animation: fadeInUp 1s ease-out; }
+        .hero h1 { font-size: 4.5rem; margin-bottom: 1.5rem; color: var(--color-white); text-shadow: 0 2px 10px rgba(0,0,0,0.3); white-space: pre-line; }
+        .hero p { font-size: 1.25rem; margin-bottom: 2.5rem; font-weight: 300; opacity: 0.9; }
+        .hero-buttons { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; }
+        .scroll-down {
+            position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+            animation: bounce 2s infinite; color: var(--color-white); font-size: 2rem; opacity: 0.7;
+        }
+
+        /* About */
+        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+        .about-img-wrapper { position: relative; }
+        .about-img-wrapper img {
+            border-radius: 4px; box-shadow: var(--shadow-lg);
+            width: 100%; height: 500px; object-fit: cover;
+        }
+        .about-img-wrapper::before {
+            content: ''; position: absolute; top: -20px; left: -20px; width: 100%; height: 100%;
+            border: 2px solid var(--color-accent); z-index: -1; border-radius: 4px;
+        }
+        .section-title {
+            font-size: 3rem; margin-bottom: 1.5rem; position: relative; display: inline-block;
+        }
+        .section-title::after {
+            content: ''; display: block; width: 60px; height: 3px;
+            background-color: var(--color-accent); margin-top: 10px;
+        }
+        .text-lead { font-size: 1.1rem; color: var(--color-text-light); margin-bottom: 1.5rem; }
+
+        /* Beliefs */
+        .beliefs-section { background-color: var(--color-bg-alt); }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem; }
+        .belief-card {
+            background: var(--color-white); padding: 3rem 2rem; border-radius: 4px;
+            box-shadow: var(--shadow-sm); transition: var(--transition); border-bottom: 3px solid transparent;
+        }
+        .belief-card:hover { transform: translateY(-10px); box-shadow: var(--shadow-lg); border-bottom-color: var(--color-accent); }
+        .belief-icon { font-size: 2.5rem; color: var(--color-accent); margin-bottom: 1.5rem; }
+        .belief-card h3 { font-size: 1.5rem; margin-bottom: 1rem; }
+
+        /* News */
+        .news-section { background-color: var(--color-bg-alt); }
+        .news-tabs { display: flex; justify-content: center; gap: 1rem; margin-bottom: 3rem; flex-wrap: wrap; }
+        .news-tab {
+            padding: 0.8rem 2rem; border: 2px solid var(--color-primary); border-radius: 50px;
+            cursor: pointer; transition: var(--transition); font-weight: 600;
+            color: var(--color-primary); background: transparent;
+        }
+        .news-tab:hover, .news-tab.active { background: var(--color-primary); color: var(--color-white); }
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; margin-top: 2rem; }
+        .news-card {
+            background: var(--color-white); border-radius: 8px; overflow: hidden;
+            box-shadow: var(--shadow-md); transition: var(--transition);
+        }
+        .news-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+        .news-image { height: 220px; overflow: hidden; position: relative; }
+        .news-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .news-card:hover .news-image img { transform: scale(1.1); }
+        .news-badge {
+            position: absolute; top: 1rem; left: 1rem; background: var(--color-accent);
+            color: var(--color-white); padding: 0.4rem 1rem; border-radius: 20px;
+            font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+        }
+        .news-badge.important { background: #c41e3a; }
+        .news-badge.event { background: var(--color-primary); }
+        .news-badge.elkras { background: #2c5282; }
+        .news-content { padding: 1.5rem; }
+        .news-date { color: var(--color-text-light); font-size: 0.85rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .news-content h3 { font-size: 1.3rem; margin-bottom: 0.8rem; line-height: 1.4; }
+        .news-content p { color: var(--color-text-light); font-size: 0.95rem; margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .news-link { color: var(--color-accent); font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .news-link:hover { color: var(--color-primary); }
+
+        /* Materials */
+        .materials-section { background-color: var(--color-bg); }
+        .materials-tabs { display: flex; justify-content: center; gap: 1rem; margin-bottom: 3rem; flex-wrap: wrap; }
+        .material-tab {
+            padding: 0.8rem 2rem; border: 2px solid var(--color-primary); border-radius: 50px;
+            cursor: pointer; transition: var(--transition); font-weight: 600;
+            color: var(--color-primary); background: transparent;
+        }
+        .material-tab:hover, .material-tab.active { background: var(--color-primary); color: var(--color-white); }
+        .materials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; margin-top: 2rem; }
+        .material-card {
+            background: var(--color-white); border-radius: 8px; overflow: hidden;
+            box-shadow: var(--shadow-md); transition: var(--transition); display: flex; flex-direction: column;
+        }
+        .material-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+        .material-preview {
+            height: 200px; background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+            display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;
+        }
+        .material-preview i { font-size: 4rem; color: rgba(255,255,255,0.3); }
+        .material-preview .icon-overlay { font-size: 3rem; color: var(--color-accent); z-index: 2; }
+        .material-type {
+            position: absolute; top: 1rem; right: 1rem; background: var(--color-accent);
+            color: var(--color-white); padding: 0.3rem 0.8rem; border-radius: 20px;
+            font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+        }
+        .material-content { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
+        .material-content h3 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+        .material-content p { color: var(--color-text-light); font-size: 0.9rem; margin-bottom: 1rem; flex-grow: 1; }
+        .material-meta { display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid var(--color-bg-alt); font-size: 0.85rem; color: var(--color-text-light); }
+        .material-meta .size { display: flex; align-items: center; gap: 0.5rem; }
+        .material-link { color: var(--color-accent); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .material-link:hover { color: var(--color-primary); }
+
+        /* Schedule */
+        .schedule-header {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+            color: var(--color-white); padding: 2rem 3rem; border-radius: 8px 8px 0 0; text-align: center;
+        }
+        .schedule-header h3 { color: var(--color-accent); font-size: 2rem; margin-bottom: 0.5rem; }
+        .schedule-header .date-range { font-size: 1.1rem; opacity: 0.9; font-weight: 300; }
+        .schedule-container {
+            background-color: var(--color-white); color: var(--color-text);
+            padding: 0; border-radius: 8px; margin-top: 3rem; box-shadow: var(--shadow-lg); overflow: hidden;
+        }
+        .schedule-week { display: grid; grid-template-columns: repeat(7, 1fr); }
+        .schedule-day {
+            border-right: 1px solid rgba(0,0,0,0.1); padding: 1.5rem 1rem; transition: var(--transition);
+        }
+        .schedule-day:last-child { border-right: none; }
+        .schedule-day:hover { background-color: var(--color-bg-alt); }
+        .schedule-day.today { background-color: rgba(197, 160, 89, 0.1); border-top: 3px solid var(--color-accent); }
+        .day-name {
+            font-family: var(--font-heading); font-size: 1.3rem; font-weight: 700;
+            color: var(--color-primary); margin-bottom: 0.5rem; text-align: center;
+            padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-accent);
+        }
+        .day-date { text-align: center; font-size: 0.9rem; color: var(--color-text-light); margin-bottom: 1rem; }
+        .schedule-item { background: var(--color-bg-alt); padding: 0.8rem; border-radius: 4px; margin-bottom: 0.8rem; font-size: 0.85rem; }
+        .schedule-item .time { font-weight: 700; color: var(--color-accent); display: block; margin-bottom: 0.3rem; }
+        .schedule-item .activity { color: var(--color-text); line-height: 1.4; }
+        .schedule-item.special {
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.2) 0%, rgba(197, 160, 89, 0.1) 100%);
+            border-left: 3px solid var(--color-accent);
+        }
+        .schedule-item.worship {
+            background: linear-gradient(135deg, rgba(26, 44, 66, 0.1) 0%, rgba(26, 44, 66, 0.05) 100%);
+            border-left: 3px solid var(--color-primary);
+        }
+        .schedule-legend { display: flex; justify-content: center; gap: 2rem; padding: 1.5rem; background: var(--color-bg-alt); border-top: 1px solid rgba(0,0,0,0.1); flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+        .legend-color { width: 20px; height: 20px; border-radius: 3px; }
+        .legend-color.worship { background: var(--color-primary); }
+        .legend-color.special { background: var(--color-accent); }
+        .legend-color.regular { background: var(--color-bg-alt); border: 1px solid var(--color-text-light); }
+
+        /* Calendar */
+        .calendar-section { background-color: var(--color-bg-alt); }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .calendar-title { display: flex; align-items: center; gap: 1rem; }
+        .calendar-title h3 { font-size: 1.8rem; margin: 0; }
+        .calendar-nav { display: flex; gap: 0.5rem; }
+        .calendar-nav button {
+            background: var(--color-primary); color: var(--color-white); border: none;
+            padding: 0.8rem 1.2rem; border-radius: 4px; cursor: pointer; transition: var(--transition);
+        }
+        .calendar-nav button:hover { background: var(--color-accent); }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--color-primary); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-lg); }
+        .calendar-day-header { background: var(--color-primary); color: var(--color-white); padding: 1rem; text-align: center; font-weight: 600; font-size: 0.9rem; }
+        .calendar-day-header.weekend { background: #8b0000; }
+        .calendar-cell { background: var(--color-white); min-height: 100px; padding: 0.8rem; transition: var(--transition); }
+        .calendar-cell:hover { background: var(--color-bg-alt); }
+        .calendar-cell.other-month { background: var(--color-bg-alt); opacity: 0.5; }
+        .calendar-cell.today { background: rgba(197, 160, 89, 0.1); }
+        .calendar-date { font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--color-primary); }
+        .calendar-cell.weekend .calendar-date { color: #8b0000; }
+        .calendar-event {
+            background: var(--color-primary); color: var(--color-white); padding: 0.4rem 0.6rem;
+            border-radius: 3px; font-size: 0.7rem; margin-bottom: 0.3rem; display: flex;
+            align-items: center; gap: 0.4rem; cursor: pointer; transition: var(--transition);
+        }
+        .calendar-event:hover { background: var(--color-accent); }
+        .calendar-event.worship { background: var(--color-primary); }
+        .calendar-event.concert { background: #8B4513; }
+        .calendar-event.special { background: var(--color-accent); }
+        .calendar-event i { font-size: 0.6rem; }
+        .calendar-legend { display: flex; justify-content: center; gap: 2rem; margin-top: 2rem; flex-wrap: wrap; }
+        .calendar-legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+        .calendar-legend-color { width: 20px; height: 20px; border-radius: 3px; }
+        .calendar-legend-color.worship { background: var(--color-primary); }
+        .calendar-legend-color.concert { background: #8B4513; }
+        .calendar-legend-color.special { background: var(--color-accent); }
+
+        /* Concerts */
+        .concerts-section {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+            color: var(--color-white); position: relative; overflow: hidden;
+        }
+        .concerts-section::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: url("image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+        .concerts-section .section-title { color: var(--color-white); }
+        .concerts-section .section-title::after { background-color: var(--color-accent); }
+        .concerts-intro { text-align: center; max-width: 800px; margin: 0 auto 3rem; opacity: 0.9; }
+        .concerts-intro p { font-size: 1.1rem; margin-bottom: 1rem; }
+        .concerts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; margin-top: 2rem; }
+        .concert-card { background: var(--color-white); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-lg); transition: var(--transition); }
+        .concert-card:hover { transform: translateY(-5px); }
+        .concert-header { background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%); color: var(--color-white); padding: 1.5rem; text-align: center; }
+        .concert-header i { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .concert-header h3 { color: var(--color-white); font-size: 1.5rem; }
+        .concert-body { padding: 2rem; }
+        .concert-list { list-style: none; }
+        .concert-item { display: flex; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--color-bg-alt); align-items: flex-start; }
+        .concert-item:last-child { border-bottom: none; }
+        .concert-date { background: var(--color-primary); color: var(--color-white); padding: 0.5rem 1rem; border-radius: 4px; text-align: center; min-width: 80px; }
+        .concert-date .day { font-size: 1.3rem; font-weight: 700; display: block; }
+        .concert-date .month { font-size: 0.75rem; text-transform: uppercase; }
+        .concert-info h4 { font-size: 1.1rem; margin-bottom: 0.3rem; color: var(--color-primary); }
+        .concert-info .time { color: var(--color-accent); font-weight: 600; font-size: 0.9rem; }
+        .concert-info .organizer { color: var(--color-text-light); font-size: 0.85rem; margin-top: 0.3rem; }
+        .concert-empty { text-align: center; padding: 3rem 2rem; color: var(--color-text-light); }
+        .concert-empty i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+        .concert-note { margin-top: 2rem; padding: 1.5rem; background: rgba(255,255,255,0.1); border-radius: 8px; text-align: center; }
+        .concert-note i { color: var(--color-accent); margin-right: 0.5rem; }
+
+        /* Gallery */
+        .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
+        .gallery-item { position: relative; overflow: hidden; height: 300px; border-radius: 4px; cursor: zoom-in; }
+        .gallery-item.large { grid-column: span 2; grid-row: span 2; height: 600px; }
+        .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .gallery-item:hover img { transform: scale(1.1); }
+        .gallery-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(26, 44, 66, 0.7); display: flex; align-items: center;
+            justify-content: center; opacity: 0; transition: var(--transition);
+        }
+        .gallery-item:hover .gallery-overlay { opacity: 1; }
+        .gallery-overlay i { color: var(--color-white); font-size: 2rem; }
+
+        /* Lightbox */
+        .lightbox {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); display: none; align-items: center;
+            justify-content: center; z-index: 2000; opacity: 0; transition: opacity 0.3s ease;
+        }
+        .lightbox.active { display: flex; opacity: 1; }
+        .lightbox-content { max-width: 90%; max-height: 90%; position: relative; }
+        .lightbox-content img { max-width: 100%; max-height: 85vh; border-radius: 4px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        .lightbox-close { position: absolute; top: -40px; right: 0; color: var(--color-white); font-size: 2rem; cursor: pointer; transition: var(--transition); }
+        .lightbox-close:hover { color: var(--color-accent); }
+        .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); color: var(--color-white); font-size: 2.5rem; cursor: pointer; transition: var(--transition); padding: 1rem; }
+        .lightbox-nav:hover { color: var(--color-accent); }
+        .lightbox-prev { left: -60px; }
+        .lightbox-next { right: -60px; }
+        .lightbox-caption { text-align: center; color: var(--color-white); margin-top: 1rem; font-size: 1.1rem; }
+
+        /* Clergy */
+        .clergy-section { background-color: var(--color-bg-alt); }
+        .clergy-card {
+            display: flex; background: var(--color-white); box-shadow: var(--shadow-md);
+            border-radius: 8px; overflow: hidden; max-width: 900px; margin: 0 auto;
+        }
+        .clergy-img { width: 40%; object-fit: cover; }
+        .clergy-info { padding: 3rem; width: 60%; display: flex; flex-direction: column; justify-content: center; }
+        .clergy-info h3 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .clergy-role { color: var(--color-accent); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.5rem; display: block; }
+
+        /* Ministries */
+        .ministries-section { background-color: var(--color-primary); color: var(--color-white); }
+        .ministries-section .section-title { color: var(--color-white); }
+        .ministries-section .section-title::after { background-color: var(--color-accent); }
+
+        /* Location/Map */
+        .map-section { background-color: var(--color-bg-alt); }
+        .map-container { width: 100%; height: 450px; border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-lg); margin-top: 2rem; }
+        .map-container iframe { width: 100%; height: 100%; border: 0; }
+        .location-info { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 3rem; }
+        .location-card { background: var(--color-white); padding: 2rem; border-radius: 8px; text-align: center; box-shadow: var(--shadow-sm); }
+        .location-card i { font-size: 2rem; color: var(--color-accent); margin-bottom: 1rem; }
+        .location-card h4 { margin-bottom: 0.5rem; }
+        .contact-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; margin-top: 3rem; }
+        .contact-detail-card { background: var(--color-white); padding: 2rem; border-radius: 8px; box-shadow: var(--shadow-sm); display: flex; align-items: flex-start; gap: 1.5rem; }
+        .contact-detail-card i { font-size: 2rem; color: var(--color-accent); min-width: 50px; }
+        .contact-detail-card h4 { margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .contact-detail-card p { color: var(--color-text-light); font-size: 0.95rem; }
+        .contact-detail-card a { color: var(--color-primary); font-weight: 600; }
+        .contact-detail-card a:hover { color: var(--color-accent); }
+
+        /* External Links */
+        .external-links { background: var(--color-bg); padding: 3rem 0; border-top: 1px solid var(--color-bg-alt); }
+        .external-link-card {
+            display: inline-flex; align-items: center; gap: 1rem; background: var(--color-white);
+            padding: 1.5rem 2rem; border-radius: 8px; box-shadow: var(--shadow-md);
+            transition: var(--transition); border: 2px solid transparent;
+        }
+        .external-link-card:hover { border-color: var(--color-accent); transform: translateY(-3px); }
+        .external-link-card i { font-size: 2rem; color: var(--color-accent); }
+        .external-link-card .link-text { text-align: left; }
+        .external-link-card .link-text h4 { font-size: 1.1rem; margin-bottom: 0.3rem; }
+        .external-link-card .link-text p { font-size: 0.85rem; color: var(--color-text-light); }
+
+        /* Footer */
+        footer { background-color: var(--color-primary); color: var(--color-white); padding: 5rem 0 2rem; }
+        .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 3rem; margin-bottom: 3rem; }
+        .footer-logo { font-family: var(--font-heading); font-size: 2rem; margin-bottom: 1.5rem; color: var(--color-white); }
+        .footer-desc { opacity: 0.8; margin-bottom: 1.5rem; max-width: 400px; }
+        .footer-heading { font-size: 1.2rem; margin-bottom: 1.5rem; color: var(--color-accent); }
+        .footer-links li { margin-bottom: 0.8rem; }
+        .footer-links a { opacity: 0.8; }
+        .footer-links a:hover { opacity: 1; color: var(--color-accent); }
+        .contact-info li { display: flex; gap: 1rem; margin-bottom: 1rem; opacity: 0.8; }
+        .contact-info i { color: var(--color-accent); margin-top: 5px; }
+        .copyright { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; text-align: center; font-size: 0.9rem; opacity: 0.6; }
+
+        /* Animations */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateX(-50%) translateY(0);} 40% {transform: translateX(-50%) translateY(-10px);} 60% {transform: translateX(-50%) translateY(-5px);} }
+        .fade-in-section { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; will-change: opacity, visibility; }
+        .fade-in-section.is-visible { opacity: 1; transform: none; }
+
+        /* Loading */
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--color-bg); display: flex; align-items: center;
+            justify-content: center; z-index: 9999; transition: opacity 0.5s ease;
+        }
+        .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+        .loading-spinner {
+            width: 50px; height: 50px; border: 4px solid var(--color-bg-alt);
+            border-top-color: var(--color-accent); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .schedule-week { grid-template-columns: repeat(4, 1fr); }
+            .schedule-day:nth-child(4) { border-right: none; }
+            .lightbox-prev { left: 10px; }
+            .lightbox-next { right: 10px; }
+        }
+        @media (max-width: 992px) {
+            .hero h1 { font-size: 3.5rem; }
+            .about-grid { grid-template-columns: 1fr; }
+            .about-img-wrapper { order: -1; margin-bottom: 2rem; }
+            .clergy-card { flex-direction: column; }
+            .clergy-img { width: 100%; height: 300px; }
+            .clergy-info { width: 100%; padding: 2rem; }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+            .location-info { grid-template-columns: 1fr; }
+            .contact-grid { grid-template-columns: 1fr; }
+            .schedule-week { grid-template-columns: repeat(2, 1fr); }
+            .schedule-day:nth-child(2), .schedule-day:nth-child(4), .schedule-day:nth-child(6) { border-right: none; }
+            .materials-grid { grid-template-columns: 1fr; }
+            .concerts-grid { grid-template-columns: 1fr; }
+            .calendar-grid { grid-template-columns: repeat(7, 1fr); }
+            .calendar-cell { min-height: 80px; padding: 0.5rem; }
+            .calendar-event { font-size: 0.65rem; padding: 0.3rem 0.4rem; }
+        }
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none; position: absolute; top: 100%; left: 0; width: 100%;
+                background-color: var(--color-primary); flex-direction: column;
+                padding: 2rem; text-align: center;
+            }
+            .nav-links.active { display: flex; }
+            .mobile-toggle { display: block; }
+            .hero h1 { font-size: 2.5rem; }
+            .gallery-grid { grid-template-columns: 1fr; }
+            .gallery-item.large { grid-column: span 1; grid-row: span 1; height: 300px; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .schedule-week { grid-template-columns: 1fr; }
+            .schedule-day { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.1); }
+            .schedule-legend { flex-direction: column; align-items: center; }
+            .materials-tabs { flex-direction: column; align-items: center; }
+            .material-tab { width: 100%; max-width: 300px; text-align: center; }
+            .external-link-card { width: 100%; flex-direction: column; text-align: center; }
+            .external-link-card .link-text { text-align: center; }
+            .calendar-header { flex-direction: column; text-align: center; }
+            .calendar-grid { font-size: 0.75rem; }
+            .calendar-cell { min-height: 60px; padding: 0.3rem; }
+            .calendar-date { font-size: 0.9rem; }
+            .calendar-event { font-size: 0.6rem; padding: 0.2rem 0.3rem; }
+            .calendar-legend { flex-direction: column; align-items: center; }
+            .news-grid { grid-template-columns: 1fr; }
+            .news-tabs { flex-direction: column; align-items: center; }
+            .news-tab { width: 100%; max-width: 300px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Header -->
+    <header id="header">
+        <div class="container nav-container">
+            <a href="#" class="logo">
+                <i class="fas fa-church"></i>
+                <span id="site-name"></span>
+            </a>
+            <div class="mobile-toggle" id="mobile-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+            <nav class="nav-links" id="nav-links"></nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-content">
+            <h1 id="hero-title"></h1>
+            <p id="hero-subtitle"></p>
+            <div class="hero-buttons" id="hero-buttons"></div>
+        </div>
+        <a href="#about" class="scroll-down">
+            <i class="fas fa-chevron-down"></i>
+        </a>
+    </section>
+
+    <!-- News Section -->
+    <section id="news" class="section-padding fade-in-section news-section">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-title" id="news-title"></h2>
+                <p class="text-lead" id="news-subtitle"></p>
+            </div>
+            <div class="news-tabs" id="news-tabs"></div>
+            <div class="news-grid" id="news-grid"></div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section-padding fade-in-section">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-text">
+                    <h2 class="section-title" id="about-title"></h2>
+                    <p class="text-lead" id="about-lead"></p>
+                    <p id="about-text1"></p>
+                    <br>
+                    <p id="about-text2"></p>
+                    <br>
+                    <a href="#" class="btn btn-primary" id="about-btn"></a>
+                </div>
+                <div class="about-img-wrapper">
+                    <img id="about-image" alt="">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Beliefs Section -->
+    <section id="beliefs" class="section-padding beliefs-section fade-in-section">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-title" id="beliefs-title"></h2>
+                <p id="beliefs-subtitle" style="max-width: 700px; margin: 0 auto; color: var(--color-text-light);"></p>
+            </div>
+            <div class="cards-grid" id="beliefs-grid"></div>
+        </div>
+    </section>
+
+    <!-- Materials Section -->
+    <section id="materials" class="section-padding fade-in-section materials-section">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-title" id="materials-title"></h2>
+                <p class="text-lead" id="materials-subtitle"></p>
+            </div>
+            <div class="materials-tabs" id="materials-tabs"></div>
+            <div class="materials-grid" id="materials-grid"></div>
+        </div>
+    </section>
+
+    <!-- Concerts Section -->
+    <section id="concerts" class="section-padding fade-in-section concerts-section">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-title" id="concerts-title"></h2>
+            </div>
+            <div class="concerts-intro" id="concerts-intro"></div>
+            <div class="concerts-grid">
+                <div class="concert-card">
+                    <div class="concert-header">
+                        <i class="fas fa-church"></i>
+                        <h3 id="concerts-church-title"></h3>
+                    </div>
+                    <div class="concert-body">
+                        <div class="concert-empty" id="concerts-church-empty">
+                            <i class="fas fa-calendar-times"></i>
+                            <p id="concerts-church-empty-text"></p>
+                        </div>
+                        <ul class="concert-list" id="concerts-church-list"></ul>
+                    </div>
+                </div>
+                <div class="concert-card">
+                    <div class="concert-header" id="concerts-philarmonic-header">
+                        <i class="fas fa-violin"></i>
+                        <h3 id="concerts-philarmonic-title"></h3>
+                    </div>
+                    <div class="concert-body">
+                        <div class="concert-empty" id="concerts-philarmonic-empty">
+                            <i class="fas fa-calendar-times"></i>
+                            <p id="concerts-philarmonic-empty-text"></p>
+                        </div>
+                        <ul class="concert-list" id="concerts-philarmonic-list"></ul>
+                    </div>
+                </div>
+            </div>
+            <div class="concert-note" id="concert-note"></div>
+        </div>
+    </section>
+
+    <!-- Schedule Section -->
+    <section id="schedule" class="section-padding fade-in-section">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-title" id="schedule-title"></h2>
+                <p class="text-lead" id="schedule-subtitle"></p>
+            </div>
+            <div class="schedule-container">
+                <div class="schedule-header">
+                    <h3><i class="far fa-calendar-alt"></i> <span id="schedule-week-dates"></span></h3>
+                    <p class="date-range" id="schedule-date-range"></p>
+                </div>
+                <div class="schedule-week" id="schedule-week"></div>
+                <div class="schedule-legend" id="schedule-legend"></div>
+            </div>
+            <div class="text-center" style="margin-top: 2rem;">
+                <p id="schedule-note"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Calendar Section -->
+    <section id="calendar" class="section-padding fade-in-section calendar-section">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-title" id="calendar-title"></h2>
+                <p class="text-lead" id="calendar-subtitle"></p>
+            </div>
+            <div class="calendar-header">
+                <div class="calendar-title">
+                    <h3 id="calendar-month-year"><i class="far fa-calendar"></i></h3>
+                </div>
+                <div class="calendar-nav">
+                    <button id="prev-month"><i class="fas fa-chevron-left"></i></button>
+                    <button id="next-month"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <div class="calendar-grid" id="calendar-grid"></div>
+            <div class="calendar-legend" id="calendar-legend"></div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="section-padding fade-in-section" style="background-color: var(--color-bg-alt);">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-title" id="gallery-title"></h2>
+                <p class="text-lead" id="gallery-subtitle"></p>
+            </div>
+            <div class="gallery-grid" id="gallery-grid"></div>
+        </div>
+    </section>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <span class="lightbox-close" id="lightbox-close"><i class="fas fa-times"></i></span>
+            <span class="lightbox-nav lightbox-prev" id="lightbox-prev"><i class="fas fa-chevron-left"></i></span>
+            <span class="lightbox-nav lightbox-next" id="lightbox-next"><i class="fas fa-chevron-right"></i></span>
+            <img src="" alt="" id="lightbox-img">
+            <div class="lightbox-caption" id="lightbox-caption"></div>
+        </div>
+    </div>
+
+    <!-- Clergy Section -->
+    <section id="clergy" class="section-padding fade-in-section clergy-section">
+        <div class="container">
+            <div class="text-center" style="margin-bottom: 3rem;">
+                <h2 class="section-title" id="clergy-title"></h2>
+            </div>
+            <div class="clergy-card">
+                <img id="clergy-image" alt="" class="clergy-img">
+                <div class="clergy-info">
+                    <h3 id="clergy-name"></h3>
+                    <span class="clergy-role" id="clergy-role"></span>
+                    <p id="clergy-quote"></p>
+                    <br>
+                    <p id="clergy-bio" style="font-size: 0.9rem; color: var(--color-text-light);"></p>
+                    <div style="margin-top: 2rem;">
+                        <a id="clergy-email-btn" class="btn btn-primary" style="padding: 0.8rem 2rem; font-size: 0.8rem;"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ministries Section -->
+    <section class="section-padding fade-in-section ministries-section">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-title" id="ministries-title"></h2>
+                <p id="ministries-subtitle" style="opacity: 0.8; margin-bottom: 3rem;"></p>
+            </div>
+            <div class="cards-grid" id="ministries-grid"></div>
+        </div>
+    </section>
+
+    <!-- Location/Map Section -->
+    <section id="location" class="section-padding fade-in-section map-section">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-title" id="location-title"></h2>
+                <p class="text-lead" id="location-subtitle"></p>
+            </div>
+            <div class="map-container" id="map-container"></div>
+            <div class="location-info" id="location-info"></div>
+            <div class="contact-grid" id="contact-grid"></div>
+        </div>
+    </section>
+
+    <!-- External Links Section -->
+    <section class="external-links fade-in-section">
+        <div class="container text-center">
+            <h3 id="external-links-title" style="margin-bottom: 2rem;"></h3>
+            <a id="external-link" href="#" target="_blank" rel="noopener noreferrer" class="external-link-card">
+                <i class="fas fa-external-link-alt"></i>
+                <div class="link-text">
+                    <h4 id="external-link-title"></h4>
+                    <p id="external-link-desc"></p>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-logo" id="footer-logo"></div>
+                    <p class="footer-desc" id="footer-description"></p>
+                    <div class="social-links" style="display: flex; gap: 1rem;" id="social-links"></div>
+                </div>
+                <div>
+                    <h4 class="footer-heading" id="footer-nav-title"></h4>
+                    <ul class="footer-links" id="footer-links"></ul>
+                </div>
+                <div>
+                    <h4 class="footer-heading" id="footer-contact-title"></h4>
+                    <ul class="contact-info" id="footer-contact-info"></ul>
+                </div>
+            </div>
+            <div class="copyright" id="footer-copyright"></div>
+        </div>
+    </footer>
+
+    <script>
+        // --- APP DATA ---
+        let appData = {};
+
+        // --- LOAD DATA FROM JSON ---
+        async function loadData() {
+            try {
+                const response = await fetch('site-data.json');
+                if (!response.ok) throw new Error('File not found');
+                appData = await response.json();
+            } catch (error) {
+                console.warn('site-data.json not found. Please upload the file from admin panel.');
+                appData = null;
+            }
+            renderAll();
+            document.getElementById('loading-overlay').classList.add('hidden');
+        }
+
+        // --- RENDER ALL ---
+        function renderAll() {
+            if (!appData) {
+                showError();
+                return;
+            }
+            renderHeader();
+            renderHero();
+            renderNews();
+            renderAbout();
+            renderBeliefs();
+            renderMaterials();
+            renderConcerts();
+            renderSchedule();
+            renderCalendar(currentMonth, currentYear);
+            renderGallery();
+            renderClergy();
+            renderMinistries();
+            renderLocation();
+            renderExternalLinks();
+            renderFooter();
+        }
+
+        function showError() {
+            document.getElementById('loading-overlay').innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--color-danger); margin-bottom: 1rem;"></i>
+                    <h2 style="color: var(--color-primary);">Файл site-data.json не найден</h2>
+                    <p style="color: var(--color-text-light); margin: 1rem 0;">Пожалуйста, загрузите файл данных из админ-панели</p>
+                    <a href="admin.html" class="btn btn-primary">Перейти в админ-панель</a>
+                </div>
+            `;
+            document.getElementById('loading-overlay').classList.remove('hidden');
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderHeader() {
+            document.getElementById('site-name').textContent = appData.site?.name || 'Св. Мария';
+            const nav = document.getElementById('nav-links');
+            nav.innerHTML = (appData.navigation || []).map(item => `
+                <a href="${item.link}">${item.label}</a>
+            `).join('');
+        }
+
+        function renderHero() {
+            const hero = appData.hero || {};
+            document.getElementById('hero').style.backgroundImage = `linear-gradient(rgba(26, 44, 66, 0.6), rgba(26, 44, 66, 0.4)), url('${hero.image || ''}')`;
+            document.getElementById('hero-title').textContent = hero.title || '';
+            document.getElementById('hero-subtitle').textContent = hero.subtitle || '';
+            document.getElementById('hero-buttons').innerHTML = (hero.buttons || []).map(btn => `
+                <a href="${btn.link}" class="btn ${btn.style === 'outline' ? 'btn-outline' : 'btn-primary'}">${btn.text}</a>
+            `).join('');
+        }
+
+        function renderNews() {
+            const news = appData.news || {};
+            document.getElementById('news-title').textContent = news.title || '';
+            document.getElementById('news-subtitle').textContent = news.subtitle || '';
+            
+            const tabs = document.getElementById('news-tabs');
+            tabs.innerHTML = (news.categories || []).map((cat, i) => `
+                <button class="news-tab ${i === 0 ? 'active' : ''}" data-tab="${cat.value}">${cat.label}</button>
+            `).join('');
+
+            const grid = document.getElementById('news-grid');
+            grid.innerHTML = (news.items || []).map(item => `
+                <div class="news-card" data-category="${item.category}">
+                    <div class="news-image">
+                        <img src="${item.image || ''}" alt="${item.title}">
+                        ${item.badge ? `<span class="news-badge ${item.badge}">${item.badgeText || ''}</span>` : ''}
+                    </div>
+                    <div class="news-content">
+                        <div class="news-date"><i class="far fa-calendar"></i><span>${formatDate(item.date)}</span></div>
+                        <h3>${item.title}</h3>
+                        <p>${item.excerpt}</p>
+                        <a href="news-item.html?id=${item.id}" class="news-link">
+    Читать далее <i class="fas fa-arrow-right"></i>
+</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderAbout() {
+            const about = appData.about || {};
+            document.getElementById('about-title').textContent = about.title || '';
+            document.getElementById('about-lead').textContent = about.lead || '';
+            document.getElementById('about-text1').textContent = about.text1 || '';
+            document.getElementById('about-text2').textContent = about.text2 || '';
+            document.getElementById('about-btn').textContent = about.btnText || '';
+            document.getElementById('about-btn').href = about.btnLink || '#';
+            document.getElementById('about-image').src = about.image || '';
+            document.getElementById('about-image').alt = about.title || '';
+        }
+
+        function renderBeliefs() {
+            const beliefs = appData.beliefs || {};
+            document.getElementById('beliefs-title').textContent = beliefs.title || '';
+            document.getElementById('beliefs-subtitle').textContent = beliefs.subtitle || '';
+            document.getElementById('beliefs-grid').innerHTML = (beliefs.items || []).map(item => `
+                <div class="belief-card">
+                    <i class="${item.icon} belief-icon"></i>
+                    <h3>${item.title}</h3>
+                    <p>${item.description}</p>
+                </div>
+            `).join('');
+        }
+
+        function renderMaterials() {
+            const materials = appData.materials || {};
+            document.getElementById('materials-title').textContent = materials.title || '';
+            document.getElementById('materials-subtitle').textContent = materials.subtitle || '';
+            
+            const tabs = document.getElementById('materials-tabs');
+            tabs.innerHTML = (materials.categories || []).map((cat, i) => `
+                <button class="material-tab ${i === 0 ? 'active' : ''}" data-tab="${cat.value}">${cat.label}</button>
+            `).join('');
+
+            const grid = document.getElementById('materials-grid');
+            grid.innerHTML = (materials.items || []).map(item => `
+                <div class="material-card" data-category="${item.category}">
+                    <div class="material-preview">
+                        <i class="fas fa-file"></i>
+                        <i class="fas fa-${item.icon || 'file'} icon-overlay"></i>
+                        <span class="material-type">${item.fileType || ''}</span>
+                    </div>
+                    <div class="material-content">
+                        <h3>${item.title}</h3>
+                        <p>${item.description}</p>
+                        <div class="material-meta">
+                            <span class="size"><i class="fas fa-file-pdf"></i> ${item.size || ''}</span>
+                            <a href="${item.url || '#'}" class="material-link" download>${item.downloadText || 'Скачать'} <i class="fas fa-download"></i></a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderConcerts() {
+            const concerts = appData.concerts || {};
+            document.getElementById('concerts-title').textContent = concerts.title || '';
+            document.getElementById('concerts-intro').innerHTML = (concerts.intro || []).map(p => `<p>${p}</p>`).join('');
+            document.getElementById('concerts-church-title').textContent = concerts.churchTitle || '';
+            document.getElementById('concerts-philarmonic-title').textContent = concerts.philarmonicTitle || '';
+            document.getElementById('concerts-church-empty-text').textContent = concerts.emptyText || '';
+            document.getElementById('concerts-philarmonic-empty-text').textContent = concerts.emptyText || '';
+            document.getElementById('concert-note').innerHTML = `<i class="fas fa-ticket-alt"></i><span>${concerts.note || ''}</span>`;
+
+            const church = (concerts.items || []).filter(c => c.organizer === 'church');
+            const philarmonic = (concerts.items || []).filter(c => c.organizer === 'philarmonic');
+
+            const churchList = document.getElementById('concerts-church-list');
+            const churchEmpty = document.getElementById('concerts-church-empty');
+            if (church.length > 0) {
+                churchEmpty.style.display = 'none';
+                churchList.innerHTML = church.map(item => `
+                    <li class="concert-item">
+                        <div class="concert-date"><span class="day">${new Date(item.date).getDate()}</span><span class="month">${getMonthName(item.date)}</span></div>
+                        <div class="concert-info">
+                            <h4>${item.title}</h4>
+                            <span class="time"><i class="far fa-clock"></i> ${item.time}</span>
+                        </div>
+                    </li>
+                `).join('');
+            }
+
+            const philList = document.getElementById('concerts-philarmonic-list');
+            const philEmpty = document.getElementById('concerts-philarmonic-empty');
+            if (philarmonic.length > 0) {
+                philEmpty.style.display = 'none';
+                philList.innerHTML = philarmonic.map(item => `
+                    <li class="concert-item">
+                        <div class="concert-date"><span class="day">${new Date(item.date).getDate()}</span><span class="month">${getMonthName(item.date)}</span></div>
+                        <div class="concert-info">
+                            <h4>${item.title}</h4>
+                            <span class="time"><i class="far fa-clock"></i> ${item.time}</span>
+                            <p class="organizer">${item.organizerName || ''}</p>
+                        </div>
+                    </li>
+                `).join('');
+            }
+        }
+
+        function renderSchedule() {
+            const schedule = appData.schedule || {};
+            document.getElementById('schedule-title').textContent = schedule.title || '';
+            document.getElementById('schedule-subtitle').textContent = schedule.subtitle || '';
+            document.getElementById('schedule-date-range').textContent = schedule.dateRange || '';
+            document.getElementById('schedule-note').innerHTML = `<i class="fas fa-info-circle text-accent"></i> ${schedule.note || ''}`;
+
+            const legend = document.getElementById('schedule-legend');
+            legend.innerHTML = (schedule.legend || []).map(item => `
+                <div class="legend-item"><div class="legend-color ${item.type}"></div><span>${item.label}</span></div>
+            `).join('');
+
+            const dayNames = schedule.dayNames || ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+            const today = new Date();
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay());
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            
+            document.getElementById('schedule-week-dates').textContent = 
+                `${weekStart.toLocaleDateString('ru-RU', {day: 'numeric', month: 'numeric'})} — ${weekEnd.toLocaleDateString('ru-RU', {day: 'numeric', month: 'numeric'})}`;
+
+            const scheduleContainer = document.getElementById('schedule-week');
+            scheduleContainer.innerHTML = '';
+            
+            for (let day = 0; day <= 6; day++) {
+                const dayItems = (schedule.items || []).filter(s => parseInt(s.day) === day);
+                const currentDate = new Date(weekStart);
+                currentDate.setDate(weekStart.getDate() + day);
+                const isToday = currentDate.toDateString() === today.toDateString();
+                
+                const dayHtml = `
+                    <div class="schedule-day ${isToday ? 'today' : ''}">
+                        <div class="day-name">${dayNames[day] || ''}</div>
+                        <div class="day-date">${currentDate.toLocaleDateString('ru-RU', {day: 'numeric', month: 'numeric'})}</div>
+                        ${dayItems.map(item => `
+                            <div class="schedule-item ${item.type}">
+                                <span class="time">${item.time}</span>
+                                <span class="activity">${item.activity}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                scheduleContainer.innerHTML += dayHtml;
+            }
+        }
+
+        // Calendar
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+
+        function renderCalendar(month, year) {
+            const calendar = appData.calendar || {};
+            const monthNames = calendar.monthNames || ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+            const dayNames = calendar.dayNames || ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+
+            document.getElementById('calendar-title').textContent = calendar.title || '';
+            document.getElementById('calendar-subtitle').textContent = calendar.subtitle || '';
+            document.getElementById('calendar-month-year').innerHTML = `<i class="far fa-calendar"></i> ${monthNames[month] || ''} ${year}`;
+
+            const legend = document.getElementById('calendar-legend');
+            legend.innerHTML = (calendar.legend || []).map(item => `
+                <div class="calendar-legend-item"><div class="calendar-legend-color ${item.type}"></div><span>${item.label}</span></div>
+            `).join('');
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startingDay = firstDay.getDay();
+            const totalDays = lastDay.getDate();
+            
+            const grid = document.getElementById('calendar-grid');
+            let html = '';
+            
+            dayNames.forEach((day, index) => {
+                const isWeekend = index === 0 || index === 6;
+                html += `<div class="calendar-day-header ${isWeekend ? 'weekend' : ''}">${day}</div>`;
+            });
+            
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+            for (let i = startingDay - 1; i >= 0; i--) {
+                html += `<div class="calendar-cell other-month"><div class="calendar-date">${prevMonthLastDay - i}</div></div>`;
+            }
+            
+            const today = new Date();
+            for (let day = 1; day <= totalDays; day++) {
+                const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
+                const dayOfWeek = new Date(year, month, day).getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                
+                const dayEvents = (calendar.events || []).filter(e => e.date === dateKey);
+                let eventsHtml = '';
+                if (dayEvents.length > 0) {
+                    eventsHtml = dayEvents.map(event => `
+                        <div class="calendar-event ${event.type}" title="${event.title}">
+                            <i class="fas ${getEventIcon(event.type)}"></i>
+                            <span>${event.title}</span>
+                        </div>
+                    `).join('');
+                }
+                
+                html += `<div class="calendar-cell ${isToday ? 'today' : ''} ${isWeekend ? 'weekend' : ''}">
+                    <div class="calendar-date">${day}</div>
+                    ${eventsHtml}
+                </div>`;
+            }
+            
+            const totalCells = 42;
+            const filledCells = startingDay + totalDays;
+            for (let i = 1; i <= totalCells - filledCells; i++) {
+                html += `<div class="calendar-cell other-month"><div class="calendar-date">${i}</div></div>`;
+            }
+            
+            grid.innerHTML = html;
+        }
+
+        function getEventIcon(type) {
+            const icons = { worship: 'fa-church', concert: 'fa-music', special: 'fa-star' };
+            return icons[type] || 'fa-circle';
+        }
+
+        function getMonthName(dateStr) {
+            const months = appData.calendar?.monthNamesShort || ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+            return months[new Date(dateStr).getMonth()] || '';
+        }
+
+        function renderGallery() {
+            const gallery = appData.gallery || {};
+            document.getElementById('gallery-title').textContent = gallery.title || '';
+            document.getElementById('gallery-subtitle').textContent = gallery.subtitle || '';
+            const grid = document.getElementById('gallery-grid');
+            grid.innerHTML = (gallery.items || []).map((item, index) => `
+                <div class="gallery-item ${item.large ? 'large' : ''}" data-index="${index}">
+                    <img src="${item.image || ''}" alt="${item.caption || ''}">
+                    <div class="gallery-overlay"><i class="fas fa-search-plus"></i></div>
+                </div>
+            `).join('');
+        }
+
+        function renderClergy() {
+            const clergy = appData.clergy || {};
+            document.getElementById('clergy-title').textContent = clergy.title || '';
+            document.getElementById('clergy-name').textContent = clergy.name || '';
+            document.getElementById('clergy-role').textContent = clergy.role || '';
+            document.getElementById('clergy-quote').textContent = clergy.quote || '';
+            document.getElementById('clergy-bio').textContent = clergy.bio || '';
+            document.getElementById('clergy-image').src = clergy.image || '';
+            document.getElementById('clergy-image').alt = clergy.name || '';
+            const emailBtn = document.getElementById('clergy-email-btn');
+            emailBtn.href = `mailto:${clergy.email || ''}`;
+            emailBtn.textContent = clergy.btnText || '';
+        }
+
+        function renderMinistries() {
+            const ministries = appData.ministries || {};
+            document.getElementById('ministries-title').textContent = ministries.title || '';
+            document.getElementById('ministries-subtitle').textContent = ministries.subtitle || '';
+            document.getElementById('ministries-grid').innerHTML = (ministries.items || []).map(m => `
+                <div class="belief-card" style="background: rgba(255,255,255,0.05); color: var(--color-white); border: 1px solid rgba(255,255,255,0.1);">
+                    <i class="${m.icon} belief-icon"></i>
+                    <h3 style="color: var(--color-white);">${m.title}</h3>
+                    <p style="opacity: 0.8;">${m.description}</p>
+                </div>
+            `).join('');
+        }
+
+        function renderLocation() {
+            const location = appData.location || {};
+            document.getElementById('location-title').textContent = location.title || '';
+            document.getElementById('location-subtitle').textContent = location.subtitle || '';
+            document.getElementById('map-container').innerHTML = location.mapEmbed || '';
+            
+            document.getElementById('location-info').innerHTML = (location.cards || []).map(card => `
+                <div class="location-card">
+                    <i class="${card.icon}"></i>
+                    <h4>${card.title}</h4>
+                    <p>${card.content}</p>
+                </div>
+            `).join('');
+
+            document.getElementById('contact-grid').innerHTML = (location.contactDetails || []).map(detail => `
+                <div class="contact-detail-card">
+                    <i class="${detail.icon}"></i>
+                    <div>
+                        <h4>${detail.title}</h4>
+                        <p>${detail.subtitle}</p>
+                        <a href="${detail.link}">${detail.text}</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderExternalLinks() {
+            const external = appData.externalLinks || {};
+            document.getElementById('external-links-title').textContent = external.title || '';
+            const link = document.getElementById('external-link');
+            link.href = external.url || '#';
+            document.getElementById('external-link-title').textContent = external.linkTitle || '';
+            document.getElementById('external-link-desc').textContent = external.linkDescription || '';
+        }
+
+        function renderFooter() {
+            const footer = appData.footer || {};
+            document.getElementById('footer-logo').innerHTML = footer.logo || '';
+            document.getElementById('footer-description').textContent = footer.description || '';
+            document.getElementById('footer-nav-title').textContent = footer.navTitle || '';
+            document.getElementById('footer-contact-title').textContent = footer.contactTitle || '';
+            document.getElementById('footer-copyright').textContent = footer.copyright || '';
+            
+            document.getElementById('social-links').innerHTML = (footer.social || []).map(social => `
+                <a href="${social.url}" style="font-size: 1.2rem;"><i class="${social.icon}"></i></a>
+            `).join('');
+
+            document.getElementById('footer-links').innerHTML = (footer.links || []).map(link => `
+                <li><a href="${link.url}">${link.text}</a></li>
+            `).join('');
+
+            document.getElementById('footer-contact-info').innerHTML = (footer.contactInfo || []).map(info => `
+                <li><i class="${info.icon}"></i><span>${info.text}</span></li>
+            `).join('');
+        }
+
+        function formatDate(dateStr) {
+            return new Date(dateStr).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        // --- EVENT LISTENERS ---
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        document.getElementById('mobile-toggle').addEventListener('click', () => {
+            document.getElementById('nav-links').classList.toggle('active');
+        });
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('nav-links').classList.remove('active');
+            });
+        });
+
+        // News tabs
+        document.getElementById('news-tabs').addEventListener('click', (e) => {
+            if (e.target.classList.contains('news-tab')) {
+                document.querySelectorAll('.news-tab').forEach(t => t.classList.remove('active'));
+                e.target.classList.add('active');
+                const category = e.target.getAttribute('data-tab');
+                document.querySelectorAll('.news-card').forEach(card => {
+                    if (category === 'all' || card.getAttribute('data-category') === category) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        // Materials tabs
+        document.getElementById('materials-tabs').addEventListener('click', (e) => {
+            if (e.target.classList.contains('material-tab')) {
+                document.querySelectorAll('.material-tab').forEach(t => t.classList.remove('active'));
+                e.target.classList.add('active');
+                const category = e.target.getAttribute('data-tab');
+                document.querySelectorAll('.material-card').forEach(card => {
+                    if (category === 'all' || card.getAttribute('data-category') === category) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        // Calendar navigation
+        document.getElementById('prev-month').addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            renderCalendar(currentMonth, currentYear);
+        });
+        document.getElementById('next-month').addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            renderCalendar(currentMonth, currentYear);
+        });
+
+        // Lightbox
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxCaption = document.getElementById('lightbox-caption');
+        let currentImageIndex = 0;
+
+        document.getElementById('gallery-grid').addEventListener('click', (e) => {
+            const item = e.target.closest('.gallery-item');
+            if (item) {
+                currentImageIndex = parseInt(item.getAttribute('data-index'));
+                openLightbox();
+            }
+        });
+
+        function openLightbox() {
+            const item = appData.gallery?.items?.[currentImageIndex];
+            if (item) {
+                lightboxImg.src = item.image || '';
+                lightboxCaption.textContent = item.caption || '';
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+        document.getElementById('lightbox-prev').addEventListener('click', () => {
+            currentImageIndex = (currentImageIndex - 1 + (appData.gallery?.items?.length || 0)) % (appData.gallery?.items?.length || 0);
+            openLightbox();
+        });
+        document.getElementById('lightbox-next').addEventListener('click', () => {
+            currentImageIndex = (currentImageIndex + 1) % (appData.gallery?.items?.length || 0);
+            openLightbox();
+        });
+        lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+        document.addEventListener('keydown', (e) => {
+            if (!lightbox.classList.contains('active')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') { currentImageIndex = (currentImageIndex - 1 + (appData.gallery?.items?.length || 0)) % (appData.gallery?.items?.length || 0); openLightbox(); }
+            if (e.key === 'ArrowRight') { currentImageIndex = (currentImageIndex + 1) % (appData.gallery?.items?.length || 0); openLightbox(); }
+        });
+
+        // Fade-in sections
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+        document.querySelectorAll('.fade-in-section').forEach(section => observer.observe(section));
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    const headerOffset = 80;
+                    const elementPosition = targetElement.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                }
+            });
+        });
+
+        // --- INIT ---
+        loadData();
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,284 @@
+{
+  "site": {
+    "name": "ЕЛЦР"
+  },
+  "navigation": [
+    {
+      "label": "Новости",
+      "link": "#news"
+    },
+    {
+      "label": "О нас",
+      "link": "#about"
+    },
+    {
+      "label": "Вероучение",
+      "link": "#beliefs"
+    },
+    {
+      "label": "Материалы",
+      "link": "#materials"
+    },
+    {
+      "label": "Концерты",
+      "link": "#concerts"
+    },
+    {
+      "label": "Богослужения",
+      "link": "#schedule"
+    },
+    {
+      "label": "Календарь",
+      "link": "#calendar"
+    },
+    {
+      "label": "Галерея",
+      "link": "#gallery"
+    },
+    {
+      "label": "Пастор",
+      "link": "#clergy"
+    },
+    {
+      "label": "Контакты",
+      "link": "#location"
+    }
+  ],
+  "hero": {
+    "title": "Евангелическо-лютеранская церковь\nСвятой Марии",
+    "subtitle": "Евангелическо-лютеранская церковь в городе Ульяновск",
+    "image": "https://sun9-45.userapi.com/s/v1/ig2/CY2N3bFHioTHhLx19BJkzi9Nm82GmnZyeOxO1H5YvRYJtC7cRFJBZTxnIG0Qx_cNFdMeCmg5r_KCGVKX3L1RNNXP.jpg?quality=95&as=32x21,48x32,72x48,108x72,160x107,240x160,360x240,480x320,540x360,640x427,720x480,1080x720,1280x853,1440x960,2560x1707&from=bu&cs=2560x0",
+    "buttons": [
+      {
+        "text": "Расписание",
+        "link": "#schedule",
+        "style": "primary"
+      },
+      {
+        "text": "Узнать больше",
+        "link": "#about",
+        "style": "outline"
+      }
+    ]
+  },
+  "about": {
+    "title": "Наша История",
+    "lead": "История общины уходит корнями в глубь веков.",
+    "text1": "Первые лютеране появились в городе в XVIII веке.",
+    "text2": "Сегодня церковь — это живой организм.",
+    "btnText": "Читать полную историю",
+    "btnLink": "#",
+    "image": "https://www.leninmemorial.ru/upload/medialibrary/2f9/2f9ac7f22c1bdc96392d15ca14125de9.jpg"
+  },
+  "beliefs": {
+    "title": "Основы Веры",
+    "subtitle": "Мы исповедуем христианскую веру.",
+    "items": [
+      {
+        "title": "Sola Scriptura",
+        "icon": "fas fa-bible",
+        "description": "Только Писание."
+      },
+      {
+        "title": "Sola Fide",
+        "icon": "fas fa-cross",
+        "description": "Только Верой."
+      },
+      {
+        "title": "Sola Gratia",
+        "icon": "fas fa-hands-praying",
+        "description": "Только Благодатью."
+      }
+    ]
+  },
+  "news": {
+    "title": "Новости",
+    "subtitle": "Последние события",
+    "categories": [
+      {
+        "label": "Все",
+        "value": "all"
+      },
+      {
+        "label": "Новости прихода",
+        "value": "parish"
+      },
+      {
+        "label": "Новости ЕЛЦ",
+        "value": "elkras"
+      }
+    ],
+    "items": []
+  },
+  "materials": {
+    "title": "Материалы",
+    "subtitle": "Полезные ресурсы",
+    "categories": [
+      {
+        "label": "Все",
+        "value": "all"
+      },
+      {
+        "label": "Вероучения",
+        "value": "doctrine"
+      },
+      {
+        "label": "Богослужение",
+        "value": "other"
+      }
+    ],
+    "items": [
+      {
+        "id": "mmghzquenb3te5ych",
+        "title": "\"Книга согласия\" Мартин Лютер",
+        "description": "",
+        "category": "doctrine",
+        "fileType": "PDF",
+        "size": "4.6 МБ",
+        "url": "https://psv4.userapi.com/s/v1/d/B1bf2Y2K-r8JUks-ypEflW126WVxWcYNj58bM_NV93SXwJ5ptCiwiRTuKO2M05ZciuI479rFaqRLyXSONzbOQHjPWYfdCQJKSS4SdjYHe7u38afmsAka2A/Kniga_Soglasia_Sbornik_veroispovednykh_dokumentov_lyuteranstva.pdf?dl=1",
+        "icon": ""
+      }
+    ]
+  },
+  "schedule": {
+    "title": "Расписание на неделю",
+    "subtitle": "Приглашаем вас принять участие",
+    "dateRange": "Еженедельное расписание",
+    "note": "Во время праздников расписание может меняться.",
+    "dayNames": [
+      "Воскресенье",
+      "Понедельник",
+      "Вторник",
+      "Среда",
+      "Четверг",
+      "Пятница",
+      "Суббота"
+    ],
+    "legend": [
+      {
+        "type": "worship",
+        "label": "Богослужение"
+      },
+      {
+        "type": "special",
+        "label": "Особое событие"
+      },
+      {
+        "type": "regular",
+        "label": "Регулярное занятие"
+      }
+    ],
+    "items": []
+  },
+  "calendar": {
+    "title": "Церковный календарь",
+    "subtitle": "Богослужения и события",
+    "monthNames": [
+      "Январь",
+      "Февраль",
+      "Март",
+      "Апрель",
+      "Май",
+      "Июнь",
+      "Июль",
+      "Август",
+      "Сентябрь",
+      "Октябрь",
+      "Ноябрь",
+      "Декабрь"
+    ],
+    "monthNamesShort": [
+      "Янв",
+      "Фев",
+      "Мар",
+      "Апр",
+      "Май",
+      "Июн",
+      "Июл",
+      "Авг",
+      "Сен",
+      "Окт",
+      "Ноя",
+      "Дек"
+    ],
+    "dayNames": [
+      "Вс",
+      "Пн",
+      "Вт",
+      "Ср",
+      "Чт",
+      "Пт",
+      "Сб"
+    ],
+    "legend": [
+      {
+        "type": "worship",
+        "label": "Богослужение"
+      },
+      {
+        "type": "concert",
+        "label": "Концерт"
+      },
+      {
+        "type": "special",
+        "label": "Особое событие"
+      }
+    ],
+    "events": []
+  },
+  "concerts": {
+    "title": "Концерты в нашем храме",
+    "intro": [
+      "Наша церковь открыта для всех любителей классической музыки.",
+      "Также выступают музыканты Ульяновской филармонии."
+    ],
+    "churchTitle": "От церкви",
+    "philarmonicTitle": "Ульяновская филармония",
+    "emptyText": "В этом месяце концертов не запланировано",
+    "note": "Билеты на концерты филармонии можно приобрести в кассе.",
+    "items": []
+  },
+  "gallery": {
+    "title": "Галерея",
+    "subtitle": "Атмосфера нашего храма",
+    "items": []
+  },
+  "clergy": {
+    "title": "Пастор ЕЛЦ святой Марии в Ульяновске",
+    "name": "Жанибек Батенов",
+    "role": "Пастор",
+    "quote": "",
+    "bio": "",
+    "image": "https://sun9-26.userapi.com/s/v1/ig2/jehAGLzNUM7_r_Tc10EeMX-ybr5f1L8ylVOiCg-h-dEZNojBAn0BMPRY8fKS8_MlgWDdF3gQ3OujlzdO6y_s9vW-.jpg?quality=95&as=32x48,48x72,72x108,108x162,160x240,240x360,360x540,480x720,540x810,640x961,720x1081,1066x1600&from=bu&cs=1066x0",
+    "email": "",
+    "btnText": "Написать пастору"
+  },
+  "ministries": {
+    "title": "Жизнь Прихода",
+    "subtitle": "Церковь — это не здание, а люди.",
+    "items": []
+  },
+  "location": {
+    "title": "Как нас найти",
+    "subtitle": "Мы находимся в центре Ульяновска.",
+    "mapEmbed": "<iframe src=\"https://yandex.com/map-widget/v1/?ll=48.388166%2C54.312948&mode=poi&poi%5Bpoint%5D=48.387584%2C54.312915&z=18\" allowfullscreen loading=\"lazy\"></iframe>",
+    "cards": [],
+    "contactDetails": []
+  },
+  "externalLinks": {
+    "title": "Партнёры и ресурсы",
+    "url": "https://www.elkras.ru/",
+    "linkTitle": "ЕЛЦ России",
+    "linkDescription": "Официальный сайт ЕЛЦ"
+  },
+  "footer": {
+    "logo": "<i class=\"fas fa-church\"></i> Св. Мария",
+    "description": "Евангелическо-лютеранская церковь в Ульяновске.",
+    "copyright": "© 2025 Евангелическо-лютеранская церковь Святой Марии.",
+    "navTitle": "Навигация",
+    "contactTitle": "Контакты",
+    "social": [],
+    "links": [],
+    "contactInfo": []
+  }
+}
