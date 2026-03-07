@@ -108,19 +108,7 @@
         "value": "elkras"
       }
     ],
-    "items": [
-      {
-        "id": "mmgu8klf7q1tndymd6d",
-        "title": "Новости",
-        "category": "parish",
-        "badge": "event",
-        "date": "2007-07-07",
-        "excerpt": "12344",
-        "fullText": "1234555",
-        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQI-SaYWlXmVicHWYEEpRgrmFir507tWQk3pA&s",
-        "link": ""
-      }
-    ]
+    "items": []
   },
   "materials": {
     "title": "Материалы",
