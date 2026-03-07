@@ -959,7 +959,7 @@
                 <div class="legend-item"><div class="legend-color ${item.type}"></div><span>${item.label}</span></div>
             `).join('');
 
-            const dayNames = schedule.dayNames || ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+            const dayNames = schedule.dayNames || ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
             const today = new Date();
             const weekStart = new Date(today);
             weekStart.setDate(today.getDate() - today.getDay());
@@ -1316,4 +1316,5 @@
     </script>
 </body>
 </html>
+
 
