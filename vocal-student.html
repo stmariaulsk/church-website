@@ -193,7 +193,18 @@
 
         let currentUser = null;
         let selectedSlot = null;
+        
+// В начале onAuthStateChanged
+let isRedirecting = false;
 
+onAuthStateChanged(auth, async (user) => {
+    if (isRedirecting) return;
+    
+    if (!user) {
+        isRedirecting = true;
+        window.location.href = 'vocal-login.html';
+        return;
+    }
         // Check auth
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
@@ -459,4 +470,5 @@
         }
     </script>
 </body>
+
 </html>
