@@ -311,7 +311,14 @@
         "label": "Особое событие"
       }
     ],
-    "events": []
+    "events": [
+      {
+        "id": "mmhplj5lcuuyur3iuuj",
+        "date": "2026-03-08",
+        "title": "Главное Богослужение",
+        "type": "worship"
+      }
+    ]
   },
   "concerts": {
     "title": "Концерты в нашем храме",
@@ -323,7 +330,22 @@
     "philarmonicTitle": "Ульяновская филармония",
     "emptyText": "В этом месяце концертов не запланировано",
     "note": "Билеты на концерты филармонии можно приобрести в кассе.",
-    "items": []
+    "items": [
+      {
+        "id": "mmhpn8heqex6kpyvv2n",
+        "organizer": "philarmonic",
+        "date": "2026-03-21",
+        "time": "13:00",
+        "title": "В гостях у сказки"
+      },
+      {
+        "id": "mmhpnoibgymx5zoi3t8",
+        "organizer": "philarmonic",
+        "date": "2026-03-21",
+        "time": "17:00",
+        "title": "Диалоги эпох"
+      }
+    ]
   },
   "gallery": {
     "title": "Галерея",
