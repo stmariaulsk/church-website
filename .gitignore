@@ -1,0 +1,14 @@
+.env
+.env.local
+.env.production
+
+firebase-admin-key.json
+*-admin-sdk.json
+
+*.log
+logs/
+
+.DS_Store
+Thumbs.db
+
+node_modules/

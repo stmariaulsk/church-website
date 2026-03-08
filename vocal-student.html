@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кабинет студента | Вокал</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Montserrat', sans-serif; background: #f4f1ea; }
+        
+        .header {
+            background: #1a2c42;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 { font-size: 1.5rem; }
+        .user-info { display: flex; align-items: center; gap: 1rem; }
+        .btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-accent { background: #c5a059; color: white; }
+        .btn-accent:hover { background: #d4b06a; }
+        .btn-danger { background: #c41e3a; color: white; }
+        
+        .main { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .card h2 { color: #1a2c42; margin-bottom: 1.5rem; }
+        
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #1a2c42; }
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 0.9rem;
+            border: 2px solid #f4f1ea;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        .form-group select:focus, .form-group input:focus {
+            outline: none;
+            border-color: #c5a059;
+        }
+        
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .slot {
+            padding: 1rem;
+            border: 2px solid #f4f1ea;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .slot:hover { border-color: #c5a059; background: #fdfbf7; }
+        .slot.selected { border-color: #c5a059; background: #c5a059; color: white; }
+        .slot.booked { background: #f4f1ea; color: #999; cursor: not-allowed; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #f4f1ea; }
+        th { background: #f4f1ea; font-weight: 600; color: #1a2c42; }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-confirmed { background: #28a745; color: white; }
+        .badge-pending { background: #ffc107; color: #333; }
+        .badge-cancelled { background: #c41e3a; color: white; }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .alert-error { background: #f8d7da; color: #721c24; }
+        .alert-success { background: #d4edda; color: #155724; }
+        
+        @media (max-width: 768px) {
+            .header { flex-direction: column; text-align: center; }
+            .main { padding: 1rem; }
+            table { overflow-x: auto; display: block; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1><i class="fas fa-microphone-alt"></i> Кабинет студента</h1>
+        <div class="user-info">
+            <span id="user-name">Загрузка...</span>
+            <button class="btn btn-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Выход</button>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="alert alert-error" id="alert-error"></div>
+        <div class="alert alert-success" id="alert-success"></div>
+
+        <!-- Booking Form -->
+        <div class="card">
+            <h2><i class="fas fa-calendar-plus"></i> Записаться на занятие</h2>
+            <div class="form-group">
+                <label>Преподаватель</label>
+                <select id="teacher-select" onchange="loadAvailableDates()">
+                    <option value="">Выберите преподавателя</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Дата</label>
+                <select id="date-select" onchange="loadAvailableSlots()" disabled>
+                    <option value="">Сначала выберите преподавателя</option>
+                </select>
+            </div>
+            <div id="slots-container" style="display: none;">
+                <label style="font-weight: 600; color: #1a2c42;">Доступное время</label>
+                <div class="slots-grid" id="slots-grid"></div>
+            </div>
+            <div class="form-group" style="margin-top: 1.5rem;">
+                <label>Комментарий (необязательно)</label>
+                <input type="text" id="booking-comment" placeholder="Например: хочу разучить песню">
+            </div>
+            <button class="btn btn-accent" onclick="submitBooking()" id="book-btn">
+                <i class="fas fa-check"></i> Записаться
+            </button>
+        </div>
+
+        <!-- My Bookings -->
+        <div class="card">
+            <h2><i class="fas fa-calendar-check"></i> Мои записи</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Время</th>
+                        <th>Преподаватель</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="bookings-list">
+                    <tr><td colspan="5" style="text-align: center;">Загрузка...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, getDoc, collection, getDocs, addDoc, query, where, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC0YQBEy7yAQ14Ion-Vx3w99KNtG9kSHQw",
+            authDomain: "stmariaulsk-vocaldb.firebaseapp.com",
+            projectId: "stmariaulsk-vocaldb",
+            storageBucket: "stmariaulsk-vocaldb.firebasestorage.app",
+            messagingSenderId: "1014321374210",
+            appId: "1:1014321374210:web:f228e994505553c741b31b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let selectedSlot = null;
+
+        // Check auth
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'vocal-login.html';
+                return;
+            }
+            
+            currentUser = JSON.parse(localStorage.getItem('user'));
+            if (!currentUser || currentUser.type !== 'student') {
+                window.location.href = 'vocal-login.html';
+                return;
+            }
+            
+            document.getElementById('user-name').textContent = currentUser.name;
+            await loadTeachers();
+            await loadMyBookings();
+        });
+
+        window.logout = async function() {
+            await signOut(auth);
+            localStorage.removeItem('user');
+            window.location.href = 'vocal-login.html';
+        };
+
+        async function loadTeachers() {
+            const teachersRef = collection(db, 'teachers');
+            const snapshot = await getDocs(teachersRef);
+            const select = document.getElementById('teacher-select');
+            select.innerHTML = '<option value="">Выберите преподавателя</option>';
+            
+            snapshot.forEach(doc => {
+                const teacher = doc.data();
+                if (teacher.status === 'active') {
+                    const option = document.createElement('option');
+                    option.value = doc.id;
+                    option.textContent = teacher.name;
+                    select.appendChild(option);
+                }
+            });
+        }
+
+        window.loadAvailableDates = async function() {
+            const teacherId = document.getElementById('teacher-select').value;
+            const dateSelect = document.getElementById('date-select');
+            
+            if (!teacherId) {
+                dateSelect.disabled = true;
+                dateSelect.innerHTML = '<option value="">Сначала выберите преподавателя</option>';
+                document.getElementById('slots-container').style.display = 'none';
+                return;
+            }
+            
+            dateSelect.disabled = false;
+            dateSelect.innerHTML = '<option value="">Загрузка...</option>';
+            
+            // Get teacher availability
+            const teacherDoc = await getDoc(doc(db, 'teachers', teacherId));
+            if (teacherDoc.exists()) {
+                const availability = teacherDoc.data().availability || {};
+                const dates = Object.keys(availability).sort();
+                
+                dateSelect.innerHTML = '<option value="">Выберите дату</option>';
+                dates.forEach(date => {
+                    const option = document.createElement('option');
+                    option.value = date;
+                    option.textContent = formatDate(date);
+                    dateSelect.appendChild(option);
+                });
+            }
+        };
+
+        window.loadAvailableSlots = async function() {
+            const teacherId = document.getElementById('teacher-select').value;
+            const date = document.getElementById('date-select').value;
+            const container = document.getElementById('slots-container');
+            const grid = document.getElementById('slots-grid');
+            
+            if (!teacherId || !date) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            grid.innerHTML = '<p>Загрузка...</p>';
+            
+            // Get availability
+            const teacherDoc = await getDoc(doc(db, 'teachers', teacherId));
+            const availability = teacherDoc.data().availability || {};
+            const slots = availability[date] || [];
+            
+            // Get booked slots
+            const bookingsRef = collection(db, 'bookings');
+            const q = query(bookingsRef, 
+                where('teacherId', '==', teacherId),
+                where('date', '==', date),
+                where('status', 'in', ['confirmed', 'pending'])
+            );
+            const snapshot = await getDocs(q);
+            const bookedSlots = [];
+            snapshot.forEach(doc => bookedSlots.push(doc.data().time));
+            
+            // Render slots
+            grid.innerHTML = '';
+            if (slots.length === 0) {
+                grid.innerHTML = '<p>Нет доступных слотов</p>';
+                return;
+            }
+            
+            slots.forEach(time => {
+                const slot = document.createElement('div');
+                slot.className = 'slot';
+                slot.textContent = time;
+                
+                if (bookedSlots.includes(time)) {
+                    slot.classList.add('booked');
+                    slot.title = 'Занято';
+                } else {
+                    slot.onclick = () => selectSlot(slot, time);
+                }
+                
+                grid.appendChild(slot);
+            });
+        };
+
+        function selectSlot(element, time) {
+            document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedSlot = time;
+        }
+
+        window.submitBooking = async function() {
+            const teacherId = document.getElementById('teacher-select').value;
+            const date = document.getElementById('date-select').value;
+            const comment = document.getElementById('booking-comment').value;
+            
+            if (!teacherId || !date || !selectedSlot) {
+                showAlert('Выберите преподавателя, дату и время', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('book-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Запись...';
+            
+            try {
+                // Get teacher name
+                const teacherDoc = await getDoc(doc(db, 'teachers', teacherId));
+                const teacherName = teacherDoc.data().name;
+                
+                // Create booking
+                await addDoc(collection(db, 'bookings'), {
+                    studentId: currentUser.uid,
+                    studentName: currentUser.name,
+                    studentEmail: currentUser.email,
+                    studentPhone: currentUser.phone,
+                    teacherId,
+                    teacherName,
+                    date,
+                    time: selectedSlot,
+                    comment,
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
+                });
+                
+                showAlert('Заявка отправлена! Преподаватель подтвердит запись.', 'success');
+                
+                // Reset form
+                document.getElementById('teacher-select').value = '';
+                document.getElementById('date-select').innerHTML = '<option value="">Сначала выберите преподавателя</option>';
+                document.getElementById('date-select').disabled = true;
+                document.getElementById('slots-container').style.display = 'none';
+                document.getElementById('booking-comment').value = '';
+                selectedSlot = null;
+                
+                await loadMyBookings();
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check"></i> Записаться';
+        };
+
+        async function loadMyBookings() {
+            const bookingsRef = collection(db, 'bookings');
+            const q = query(bookingsRef, where('studentId', '==', currentUser.uid));
+            const snapshot = await getDocs(q);
+            
+            const tbody = document.getElementById('bookings-list');
+            tbody.innerHTML = '';
+            
+            if (snapshot.empty) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">У вас пока нет записей</td></tr>';
+                return;
+            }
+            
+            const bookings = [];
+            snapshot.forEach(doc => bookings.push({ id: doc.id, ...doc.data() }));
+            
+            // Sort by date
+            bookings.sort((a, b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time));
+            
+            bookings.forEach(booking => {
+                const tr = document.createElement('tr');
+                const statusClass = `badge-${booking.status}`;
+                const statusText = booking.status === 'confirmed' ? 'Подтверждено' : 
+                                   booking.status === 'pending' ? 'Ожидает' : 'Отменено';
+                
+                const canCancel = booking.status === 'pending' || booking.status === 'confirmed';
+                
+                tr.innerHTML = `
+                    <td>${formatDate(booking.date)}</td>
+                    <td>${booking.time}</td>
+                    <td>${booking.teacherName}</td>
+                    <td><span class="badge ${statusClass}">${statusText}</span></td>
+                    <td>
+                        ${canCancel ? `<button class="btn btn-danger btn-sm" onclick="cancelBooking('${booking.id}')">Отменить</button>` : '—'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.cancelBooking = async function(bookingId) {
+            if (!confirm('Вы уверены, что хотите отменить запись?')) return;
+            
+            try {
+                await updateDoc(doc(db, 'bookings', bookingId), {
+                    status: 'cancelled',
+                    cancelledAt: new Date().toISOString()
+                });
+                showAlert('Запись отменена', 'success');
+                await loadMyBookings();
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        };
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        function showAlert(message, type) {
+            const errorAlert = document.getElementById('alert-error');
+            const successAlert = document.getElementById('alert-success');
+            
+            errorAlert.style.display = 'none';
+            successAlert.style.display = 'none';
+            
+            if (type === 'error') {
+                errorAlert.textContent = message;
+                errorAlert.style.display = 'block';
+            } else {
+                successAlert.textContent = message;
+                successAlert.style.display = 'block';
+            }
+            
+            setTimeout(() => {
+                errorAlert.style.display = 'none';
+                successAlert.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
