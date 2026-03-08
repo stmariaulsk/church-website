@@ -947,52 +947,65 @@
             }
         }
 
-        function renderSchedule() {
-            const schedule = appData.schedule || {};
-            document.getElementById('schedule-title').textContent = schedule.title || '';
-            document.getElementById('schedule-subtitle').textContent = schedule.subtitle || '';
-            document.getElementById('schedule-date-range').textContent = schedule.dateRange || '';
-            document.getElementById('schedule-note').innerHTML = `<i class="fas fa-info-circle text-accent"></i> ${schedule.note || ''}`;
+       function renderSchedule() {
+    const schedule = appData.schedule || {};
+    document.getElementById('schedule-title').textContent = schedule.title || '';
+    document.getElementById('schedule-subtitle').textContent = schedule.subtitle || '';
+    document.getElementById('schedule-date-range').textContent = schedule.dateRange || '';
+    document.getElementById('schedule-note').innerHTML = `<i class="fas fa-info-circle text-accent"></i> ${schedule.note || ''}`;
 
-            const legend = document.getElementById('schedule-legend');
-            legend.innerHTML = (schedule.legend || []).map(item => `
-                <div class="legend-item"><div class="legend-color ${item.type}"></div><span>${item.label}</span></div>
-            `).join('');
+    const legend = document.getElementById('schedule-legend');
+    legend.innerHTML = (schedule.legend || []).map(item => `
+        <div class="legend-item"><div class="legend-color ${item.type}"></div><span>${item.label}</span></div>
+    `).join('');
 
-            const dayNames = schedule.dayNames || ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
-            const today = new Date();
-            const weekStart = new Date(today);
-            weekStart.setDate(today.getDate() - today.getDay());
-            const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekStart.getDate() + 6);
-            
-            document.getElementById('schedule-week-dates').textContent = 
-                `${weekStart.toLocaleDateString('ru-RU', {day: 'numeric', month: 'numeric'})} — ${weekEnd.toLocaleDateString('ru-RU', {day: 'numeric', month: 'numeric'})}`;
+    const dayNames = schedule.dayNames || ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
+    const today = new Date();
+    
+    // === ИСПРАВЛЕНИЕ: Правильный расчёт понедельника ===
+    // JavaScript: 0=Вс, 1=Пн, 2=Вт, 3=Ср, 4=Чт, 5=Пт, 6=Сб
+    // Нам нужно: 0=Пн, 1=Вт, 2=Ср, 3=Чт, 4=Пт, 5=Сб, 6=Вс
+    
+    const dayOfWeek = today.getDay(); // 0-6 (Вс-Сб)
+    const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Преобразуем к понедельнику
+    
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - mondayOffset); // Находим понедельник
+    
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6); // Находим воскресенье
+    
+    document.getElementById('schedule-week-dates').textContent = 
+        `${weekStart.toLocaleDateString('ru-RU', {day: 'numeric', month: 'numeric'})} — ${weekEnd.toLocaleDateString('ru-RU', {day: 'numeric', month: 'numeric'})}`;
 
-            const scheduleContainer = document.getElementById('schedule-week');
-            scheduleContainer.innerHTML = '';
-            
-            for (let day = 0; day <= 6; day++) {
-                const dayItems = (schedule.items || []).filter(s => parseInt(s.day) === day);
-                const currentDate = new Date(weekStart);
-                currentDate.setDate(weekStart.getDate() + day);
-                const isToday = currentDate.toDateString() === today.toDateString();
-                
-                const dayHtml = `
-                    <div class="schedule-day ${isToday ? 'today' : ''}">
-                        <div class="day-name">${dayNames[day] || ''}</div>
-                        <div class="day-date">${currentDate.toLocaleDateString('ru-RU', {day: 'numeric', month: 'numeric'})}</div>
-                        ${dayItems.map(item => `
-                            <div class="schedule-item ${item.type}">
-                                <span class="time">${item.time}</span>
-                                <span class="activity">${item.activity}</span>
-                            </div>
-                        `).join('')}
+    const scheduleContainer = document.getElementById('schedule-week');
+    scheduleContainer.innerHTML = '';
+    
+    for (let i = 0; i < 7; i++) {
+        const currentDate = new Date(weekStart);
+        currentDate.setDate(weekStart.getDate() + i);
+        
+        // Преобразуем индекс (0-6) к JavaScript getDay() для фильтрации
+        const jsDay = i === 6 ? 0 : i + 1; // 0=Пн→1, 1=Вт→2, ..., 6=Вс→0
+        
+        const dayItems = (schedule.items || []).filter(s => parseInt(s.day) === i);
+        const isToday = currentDate.toDateString() === today.toDateString();
+        
+        const dayHtml = `
+            <div class="schedule-day ${isToday ? 'today' : ''}">
+                <div class="day-name">${dayNames[i] || ''}</div>
+                <div class="day-date">${currentDate.toLocaleDateString('ru-RU', {day: 'numeric', month: 'numeric'})}</div>
+                ${dayItems.map(item => `
+                    <div class="schedule-item ${item.type}">
+                        <span class="time">${item.time}</span>
+                        <span class="activity">${item.activity}</span>
                     </div>
-                `;
-                scheduleContainer.innerHTML += dayHtml;
-            }
-        }
+                `).join('')}
+            </div>
+        `;
+        scheduleContainer.innerHTML += dayHtml;
+    }
+}
 
         // Calendar
         let currentMonth = new Date().getMonth();
@@ -1316,6 +1329,7 @@
     </script>
 </body>
 </html>
+
 
 
 
