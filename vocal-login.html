@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Стили остаются те же */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: 'Montserrat', sans-serif; 
@@ -206,12 +207,10 @@
     </div>
 
     <script type="module">
-        // Import Firebase
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-        // Firebase config - ЗАМЕНИТЕ НА СВОИ ДАННЫЕ
         const firebaseConfig = {
             apiKey: "AIzaSyC0YQBEy7yAQ14Ion-Vx3w99KNtG9kSHQw",
             authDomain: "stmariaulsk-vocaldb.firebaseapp.com",
@@ -221,12 +220,13 @@
             appId: "1:1014321374210:web:f228e994505553c741b31b"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Make functions global
+        // === ВАЖНО: Флаг для предотвращения цикла ===
+        let isRedirecting = false;
+
         window.switchTab = function(tab) {
             document.querySelectorAll('.form-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
@@ -255,7 +255,6 @@
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 
-                // Get user data from Firestore
                 const userDoc = await getDoc(doc(db, 'users', user.uid));
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
@@ -268,9 +267,12 @@
                     }));
                     
                     showAlert('Успешный вход! Перенаправление...', 'success');
+                    
+                    // === ВАЖНО: Небольшая задержка перед редиректом ===
                     setTimeout(() => {
-                        window.location.href = userData.type === 'teacher' ? 'vocal-teacher' : 'vocal-student';
-                    }, 1500);
+                        isRedirecting = true;
+                        window.location.href = userData.type === 'teacher' ? 'vocal-teacher.html' : 'vocal-student.html';
+                    }, 1000);
                 } else {
                     throw new Error('Профиль не найден');
                 }
@@ -303,7 +305,6 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 
-                // Save user data to Firestore
                 await setDoc(doc(db, 'users', user.uid), {
                     name,
                     email,
@@ -313,7 +314,6 @@
                     status: 'active'
                 });
                 
-                // If teacher, create availability document
                 if (type === 'teacher') {
                     await setDoc(doc(db, 'teachers', user.uid), {
                         name,
@@ -333,9 +333,11 @@
                 }));
                 
                 showAlert('Регистрация успешна! Перенаправление...', 'success');
+                
                 setTimeout(() => {
-                    window.location.href = type === 'teacher' ? 'vocal-teacher' : 'vocal-student';
-                }, 1500);
+                    isRedirecting = true;
+                    window.location.href = type === 'teacher' ? 'vocal-teacher.html' : 'vocal-student.html';
+                }, 1000);
             } catch (error) {
                 showAlert('Ошибка: ' + error.message, 'error');
                 btn.disabled = false;
@@ -364,16 +366,32 @@
             document.getElementById('alert-success').style.display = 'none';
         }
 
-        // Check if already logged in
+        // === ИСПРАВЛЕННЫЙ onAuthStateChanged ===
         onAuthStateChanged(auth, (user) => {
+            // Если уже идёт перенаправление - не делаем ничего
+            if (isRedirecting) {
+                console.log('Redirect in progress, skipping auth check');
+                return;
+            }
+            
+            // Если мы на странице логина и пользователь уже вошёл
             if (user) {
                 const savedUser = JSON.parse(localStorage.getItem('user'));
-                if (savedUser) {
-                    window.location.href = savedUser.type === 'teacher' ? 'vocal-teacher' : 'vocal-student';
+                if (savedUser && savedUser.type) {
+                    // Проверяем, не находимся ли мы уже на правильной странице
+                    const currentPage = window.location.pathname;
+                    const expectedPage = savedUser.type === 'teacher' ? 'vocal-teacher.html' : 'vocal-student.html';
+                    
+                    // Если мы не на той странице - перенаправляем
+                    if (!currentPage.includes(expectedPage)) {
+                        console.log('Redirecting to:', expectedPage);
+                        isRedirecting = true;
+                        window.location.href = expectedPage;
+                    }
                 }
             }
+            // Если пользователь не вошёл - остаёмся на странице логина (ничего не делаем)
         });
     </script>
 </body>
-
 </html>
