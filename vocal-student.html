@@ -193,6 +193,10 @@
 
         let currentUser = null;
         let selectedSlot = null;
+
+        import { setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+await setPersistence(auth, browserLocalPersistence);
         
 // В начале onAuthStateChanged
 let isRedirecting = false;
@@ -472,3 +476,4 @@ onAuthStateChanged(auth, async (user) => {
 </body>
 
 </html>
+
