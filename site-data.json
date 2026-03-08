@@ -365,7 +365,26 @@
   "ministries": {
     "title": "Жизнь Прихода",
     "subtitle": "Церковь — это не здание, а люди.",
-    "items": []
+    "items": [
+      {
+        "id": "mmhptd8578x1wqu748",
+        "title": "Диаконическое служение",
+        "icon": "fas fa-handshake-angle",
+        "description": "Каждую среду мы готовим еду и раздаем её нуждающимся в 13:00 на Дамбе"
+      },
+      {
+        "id": "mmhpvcr7u7oem0kiav",
+        "title": "Детское служение",
+        "icon": "fas fa-hands-holding-child",
+        "description": "По воскресениям в 10:30 проводятся детские библейские занятия"
+      },
+      {
+        "id": "mmhpydphz887fc1sh9e",
+        "title": "Служение музыкой",
+        "icon": "fas fa-hands-clapping",
+        "description": "По понедельникам и пятницам в 18:00 проводятся репетиции церковного хора, который регулярно дает концерты"
+      }
+    ]
   },
   "location": {
     "title": "Как нас найти",
