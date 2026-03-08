@@ -8,10 +8,6 @@
       "link": "#news"
     },
     {
-      "label": "О нас",
-      "link": "#about"
-    },
-    {
       "label": "Вероучение",
       "link": "#beliefs"
     },
@@ -28,20 +24,8 @@
       "link": "#schedule"
     },
     {
-      "label": "Календарь",
-      "link": "#calendar"
-    },
-    {
       "label": "Галерея",
       "link": "#gallery"
-    },
-    {
-      "label": "Пастор",
-      "link": "#clergy"
-    },
-    {
-      "label": "Контакты",
-      "link": "#location"
     }
   ],
   "hero": {
