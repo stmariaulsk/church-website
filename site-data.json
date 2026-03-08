@@ -427,13 +427,15 @@
     "linkDescription": "Официальный сайт ЕЛЦ"
   },
   "footer": {
-    "logo": "<i class=\"fas fa-church\"></i> Св. Мария",
+    "logo": "<i class=\"fas fa-church\"></i> ЕЛЦР",
     "description": "Евангелическо-лютеранская церковь в Ульяновске.",
     "copyright": "© 2025 Евангелическо-лютеранская церковь Святой Марии.",
     "navTitle": "Навигация",
     "contactTitle": "Контакты",
     "social": [],
     "links": [],
-    "contactInfo": []
+    "contactInfo": [],
+    "desc": "",
+    "copy": ""
   }
 }
