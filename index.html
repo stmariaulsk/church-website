@@ -753,7 +753,7 @@
         // --- LOAD DATA FROM JSON ---
         async function loadData() {
             try {
-                const response = await fetch('site-data.json');
+                const response = await fetch('site-data.json?v=' + Date.now());
                 if (!response.ok) throw new Error('File not found');
                 appData = await response.json();
             } catch (error) {
@@ -1316,5 +1316,6 @@
     </script>
 </body>
 </html>
+
 
 
