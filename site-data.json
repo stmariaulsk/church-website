@@ -338,7 +338,22 @@
     "philarmonicTitle": "Ульяновская филармония",
     "emptyText": "В этом месяце концертов не запланировано",
     "note": "Билеты на концерты филармонии можно приобрести в кассе.",
-    "items": []
+    "items": [
+      {
+        "id": "mmhr3kdn81eg3xflz6h",
+        "organizer": "philarmonic",
+        "date": "2026-03-21",
+        "time": "13:00",
+        "title": "В гостях у сказки"
+      },
+      {
+        "id": "mmhr443na5qlq341f2",
+        "organizer": "philarmonic",
+        "date": "2026-03-21",
+        "time": "17:00",
+        "title": "Диалоги эпох"
+      }
+    ]
   },
   "gallery": {
     "title": "Галерея",
