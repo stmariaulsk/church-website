@@ -269,7 +269,7 @@
                     
                     showAlert('Успешный вход! Перенаправление...', 'success');
                     setTimeout(() => {
-                        window.location.href = userData.type === 'teacher' ? 'vocal-teacher.html' : 'vocal-student.html';
+                        window.location.href = userData.type === 'teacher' ? 'vocal-teacher' : 'vocal-student';
                     }, 1500);
                 } else {
                     throw new Error('Профиль не найден');
@@ -334,7 +334,7 @@
                 
                 showAlert('Регистрация успешна! Перенаправление...', 'success');
                 setTimeout(() => {
-                    window.location.href = type === 'teacher' ? 'vocal-teacher.html' : 'vocal-student.html';
+                    window.location.href = type === 'teacher' ? 'vocal-teacher' : 'vocal-student';
                 }, 1500);
             } catch (error) {
                 showAlert('Ошибка: ' + error.message, 'error');
@@ -369,10 +369,11 @@
             if (user) {
                 const savedUser = JSON.parse(localStorage.getItem('user'));
                 if (savedUser) {
-                    window.location.href = savedUser.type === 'teacher' ? 'vocal-teacher.html' : 'vocal-student.html';
+                    window.location.href = savedUser.type === 'teacher' ? 'vocal-teacher' : 'vocal-student';
                 }
             }
         });
     </script>
 </body>
+
 </html>
