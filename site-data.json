@@ -350,7 +350,26 @@
   "gallery": {
     "title": "Галерея",
     "subtitle": "Атмосфера нашего храма",
-    "items": []
+    "items": [
+      {
+        "id": "mmhq20dadq93824f1i",
+        "image": "https://sun9-37.userapi.com/s/v1/ig2/VLbLHUA_v23RzN4q7TqGO_DjL-kj-HNWUmKP3EW8GRc1fRwWp8Ym6BNGsazOuT-XoTDV2ha7Exuz94jtidovnHTk.jpg?quality=95&as=32x21,48x32,72x48,108x72,160x107,240x160,360x240,480x320,540x360,640x427,720x480,1080x720,1280x853,1440x960,2560x1707&from=bu&cs=2560x0",
+        "caption": "Церковь внутри",
+        "large": true
+      },
+      {
+        "id": "mmhq41vp9m4dwtkizel",
+        "image": "https://sun9-21.userapi.com/s/v1/ig2/TomV-wRitNz2AX3qdvOHHefR8yxiZfYB-xYyYq_0Jk89yixo1tVoOmmbuGaOd6T9plWWgf9BjdiOfEWvliDZEwsi.jpg?quality=96&as=32x21,48x32,72x48,108x72,160x107,240x160,360x240,480x320,540x360,640x426,720x480,1080x720,1280x853,1440x959,1600x1066&from=bu&cs=1600x0",
+        "caption": "Рождественская сценка",
+        "large": false
+      },
+      {
+        "id": "mmhq6ajwx9vfbuxh7z",
+        "image": "https://sun9-14.userapi.com/s/v1/ig2/Vi8aXmAwm1lqeurT8lmqa58_VnZyXRAcFqnxLGD7n-OKeoCXqFeQx0t-MHDF9ara_Oyb9Rg6THlD-3oTIWwLYJNM.jpg?quality=95&as=32x21,48x32,72x48,108x72,160x107,240x160,360x240,480x320,540x360,640x426,720x480,1080x720,1280x853,1440x960,2560x1706&from=bu&cs=2560x0",
+        "caption": "Концерт",
+        "large": false
+      }
+    ]
   },
   "clergy": {
     "title": "Пастор ЕЛЦ Святой Марии в Ульяновске",
