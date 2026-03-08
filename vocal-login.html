@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Стили остаются те же */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: 'Montserrat', sans-serif; 
@@ -220,12 +219,20 @@
             appId: "1:1014321374210:web:f228e994505553c741b31b"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // === ИНИЦИАЛИЗАЦИЯ С ОБРАБОТКОЙ ОШИБОК ===
+        let app, auth, db;
+        
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            console.log('✅ Firebase инициализирован');
+        } catch (error) {
+            console.error('❌ Ошибка Firebase:', error);
+            showAlert('Ошибка подключения к серверу. Обновите страницу.', 'error');
+        }
 
-        // === ВАЖНО: Флаг для предотвращения цикла ===
-        let isRedirecting = false;
+        let authCheckComplete = false;
 
         window.switchTab = function(tab) {
             document.querySelectorAll('.form-tab').forEach(t => t.classList.remove('active'));
@@ -252,12 +259,26 @@
             btn.innerHTML = '<span class="spinner"></span> Вход...';
             
             try {
+                console.log('🔐 Попытка входа:', email);
+                
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                console.log('✅ Успешный вход:', user.uid);
+                
+                // === ВАЖНО: Таймаут для загрузки данных ===
+                const userDocPromise = getDoc(doc(db, 'users', user.uid));
+                const userDoc = await Promise.race([
+                    userDocPromise,
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Таймаут загрузки данных')), 5000)
+                    )
+                ]);
+                
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
+                    console.log('📄 Данные пользователя:', userData);
+                    
                     localStorage.setItem('user', JSON.stringify({
                         uid: user.uid,
                         email: user.email,
@@ -268,15 +289,17 @@
                     
                     showAlert('Успешный вход! Перенаправление...', 'success');
                     
-                    // === ВАЖНО: Небольшая задержка перед редиректом ===
                     setTimeout(() => {
-                        isRedirecting = true;
-                        window.location.href = userData.type === 'teacher' ? 'vocal-teacher.html' : 'vocal-student.html';
+                        const targetPage = userData.type === 'teacher' ? 'vocal-teacher.html' : 'vocal-student.html';
+                        console.log('🔄 Перенаправление на:', targetPage);
+                        window.location.href = targetPage;
                     }, 1000);
                 } else {
-                    throw new Error('Профиль не найден');
+                    console.error('❌ Профиль не найден в Firestore');
+                    throw new Error('Профиль не найден. Обратитесь к администратору.');
                 }
             } catch (error) {
+                console.error('❌ Ошибка входа:', error.message);
                 showAlert('Ошибка: ' + error.message, 'error');
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти';
@@ -302,10 +325,15 @@
             btn.innerHTML = '<span class="spinner"></span> Регистрация...';
             
             try {
+                console.log('📝 Регистрация:', email, type);
+                
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 
-                await setDoc(doc(db, 'users', user.uid), {
+                console.log('✅ Пользователь создан:', user.uid);
+                
+                // === Сохранение в Firestore с таймаутом ===
+                const savePromise = setDoc(doc(db, 'users', user.uid), {
                     name,
                     email,
                     phone,
@@ -313,6 +341,13 @@
                     createdAt: new Date().toISOString(),
                     status: 'active'
                 });
+                
+                await Promise.race([
+                    savePromise,
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Таймаут сохранения')), 5000)
+                    )
+                ]);
                 
                 if (type === 'teacher') {
                     await setDoc(doc(db, 'teachers', user.uid), {
@@ -335,10 +370,12 @@
                 showAlert('Регистрация успешна! Перенаправление...', 'success');
                 
                 setTimeout(() => {
-                    isRedirecting = true;
-                    window.location.href = type === 'teacher' ? 'vocal-teacher.html' : 'vocal-student.html';
+                    const targetPage = type === 'teacher' ? 'vocal-teacher.html' : 'vocal-student.html';
+                    console.log('🔄 Перенаправление на:', targetPage);
+                    window.location.href = targetPage;
                 }, 1000);
             } catch (error) {
+                console.error('❌ Ошибка регистрации:', error.message);
                 showAlert('Ошибка: ' + error.message, 'error');
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-user-plus"></i> Зарегистрироваться';
@@ -368,30 +405,34 @@
 
         // === ИСПРАВЛЕННЫЙ onAuthStateChanged ===
         onAuthStateChanged(auth, (user) => {
-            // Если уже идёт перенаправление - не делаем ничего
-            if (isRedirecting) {
-                console.log('Redirect in progress, skipping auth check');
+            console.log('🔄 Auth state changed:', user ? user.email : 'null');
+            
+            if (authCheckComplete) {
+                console.log('✅ Auth check уже завершён, пропускаем');
                 return;
             }
             
-            // Если мы на странице логина и пользователь уже вошёл
             if (user) {
                 const savedUser = JSON.parse(localStorage.getItem('user'));
                 if (savedUser && savedUser.type) {
-                    // Проверяем, не находимся ли мы уже на правильной странице
+                    authCheckComplete = true;
+                    const targetPage = savedUser.type === 'teacher' ? 'vocal-teacher.html' : 'vocal-student.html';
                     const currentPage = window.location.pathname;
-                    const expectedPage = savedUser.type === 'teacher' ? 'vocal-teacher.html' : 'vocal-student.html';
                     
-                    // Если мы не на той странице - перенаправляем
-                    if (!currentPage.includes(expectedPage)) {
-                        console.log('Redirecting to:', expectedPage);
-                        isRedirecting = true;
-                        window.location.href = expectedPage;
+                    if (!currentPage.includes(targetPage)) {
+                        console.log('🔄 Перенаправление на:', targetPage);
+                        window.location.href = targetPage;
+                    } else {
+                        console.log('✅ Уже на правильной странице');
                     }
                 }
+            } else {
+                console.log('ℹ️ Пользователь не авторизован - показываем форму входа');
+                authCheckComplete = true;
             }
-            // Если пользователь не вошёл - остаёмся на странице логина (ничего не делаем)
         });
+        
+        console.log('🚀 Скрипт загружен, ожидание авторизации...');
     </script>
 </body>
 </html>
