@@ -198,6 +198,55 @@
         "time": "18:00",
         "activity": "Репетиция хора",
         "type": "regular"
+      },
+      {
+        "id": "mmhpabamun2bh7xjtig",
+        "day": 1,
+        "time": "18:00",
+        "activity": "Иоанновские чтения",
+        "type": "regular"
+      },
+      {
+        "id": "mmhpapqlj74wo40xz8",
+        "day": 2,
+        "time": "10:00",
+        "activity": "Диаконическое служение. Приготовление еды",
+        "type": "regular"
+      },
+      {
+        "id": "mmhpb61y2pzo5ovbs85",
+        "day": 2,
+        "time": "13:00",
+        "activity": "Диаконическое служение. Раздача еды",
+        "type": "regular"
+      },
+      {
+        "id": "mmhpbkvbdn6fz3mersv",
+        "day": 3,
+        "time": "17:00",
+        "activity": "Конфирмационное занятие",
+        "type": "regular"
+      },
+      {
+        "id": "mmhpbvj1xdzob56jjw",
+        "day": 3,
+        "time": "18:00",
+        "activity": "Вечернее Богослужение",
+        "type": "worship"
+      },
+      {
+        "id": "mmhpcbnx96sv8d1sfx",
+        "day": 4,
+        "time": "18:00",
+        "activity": "Репетиция хора",
+        "type": "regular"
+      },
+      {
+        "id": "mmhpcudxikfm4prcqsd",
+        "day": 6,
+        "time": "10:00",
+        "activity": "Главное Богослужение",
+        "type": "worship"
       }
     ]
   },
