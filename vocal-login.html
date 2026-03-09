@@ -60,6 +60,7 @@
             border-color: #c5a059;
             box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.2);
         }
+        .form-group small { color: #666; font-size: 0.85rem; display: block; margin-top: 0.3rem; }
         
         .btn {
             width: 100%;
@@ -127,10 +128,29 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Pending screen styles */
+        .pending-screen {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        .pending-screen.active { display: block; }
+        .pending-screen i { font-size: 4rem; color: #c5a059; margin-bottom: 1rem; }
+        .pending-screen h2 { color: #1a2c42; margin-bottom: 1rem; }
+        .pending-screen p { color: #666; margin-bottom: 1rem; }
+        .pending-screen .info-box {
+            background: #fff3cd;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            color: #856404;
+        }
     </style>
 </head>
 <body>
-    <div class="auth-container">
+    <!-- Main Auth Container -->
+    <div class="auth-container" id="auth-container">
         <div class="auth-header">
             <i class="fas fa-microphone-alt"></i>
             <h1>Вокальная студия</h1>
@@ -142,13 +162,13 @@
             <div class="alert alert-success" id="alert-success"></div>
             
             <div class="form-tabs">
-                <div class="form-tab active" onclick="switchTab('login')">Вход</div>
-                <div class="form-tab" onclick="switchTab('register')">Регистрация</div>
+                <div class="form-tab active" onclick="app.switchTab('login')">Вход</div>
+                <div class="form-tab" onclick="app.switchTab('register')">Регистрация</div>
             </div>
             
             <!-- Login Form -->
             <div class="form-section active" id="login-form">
-                <form onsubmit="handleLogin(event)">
+                <form onsubmit="app.handleLogin(event)">
                     <div class="form-group">
                         <label><i class="fas fa-envelope"></i> Email</label>
                         <input type="email" id="login-email" required placeholder="your@email.com">
@@ -165,7 +185,7 @@
             
             <!-- Register Form -->
             <div class="form-section" id="register-form">
-                <form onsubmit="handleRegister(event)">
+                <form onsubmit="app.handleRegister(event)">
                     <div class="form-group">
                         <label><i class="fas fa-user"></i> ФИО</label>
                         <input type="text" id="reg-name" required placeholder="Иванов Иван Иванович">
@@ -184,8 +204,8 @@
                             <option value="student">Студент (хочу записаться)</option>
                             <option value="teacher">Преподаватель (хочу вести занятия)</option>
                         </select>
-                        <small style="color: #666; margin-top: 0.3rem;">
-                            <i class="fas fa-info-circle"></i> Регистрация администраторов отключена. Обратитесь к разработчику.
+                        <small>
+                            <i class="fas fa-info-circle"></i> Все новые аккаунты требуют подтверждения администратором
                         </small>
                     </div>
                     <div class="form-group">
@@ -208,12 +228,71 @@
         </div>
     </div>
 
+    <!-- Pending Screen (shown after registration) -->
+    <div class="auth-container pending-screen" id="pending-screen">
+        <div class="auth-header">
+            <i class="fas fa-hourglass-half"></i>
+            <h1>Заявка отправлена</h1>
+            <p>Церковь Святой Марии</p>
+        </div>
+        <div class="auth-body" style="text-align: center;">
+            <i class="fas fa-clock" style="font-size: 4rem; color: #c5a059; margin-bottom: 1rem;"></i>
+            <h2 style="color: #1a2c42; margin-bottom: 1rem;">Ожидание подтверждения</h2>
+            <p style="color: #666; margin-bottom: 1.5rem;">
+                Спасибо за регистрацию! Ваш аккаунт ожидает подтверждения администратором.
+            </p>
+            <div class="info-box">
+                <i class="fas fa-info-circle" style="margin-right: 0.5rem;"></i>
+                Обычно подтверждение занимает до 24 часов. Вы получите уведомление на email.
+            </div>
+            <p style="color: #999; font-size: 0.9rem; margin: 1.5rem 0;">
+                Пока вы можете вернуться на главный сайт.
+            </p>
+            <button class="btn btn-primary" onclick="window.location.href='index.html'">
+                <i class="fas fa-home"></i> На сайт церкви
+            </button>
+            <button class="btn btn-outline" onclick="app.logout()" style="margin-top: 1rem; background: transparent; border-color: #c41e3a; color: #c41e3a;">
+                <i class="fas fa-sign-out-alt"></i> Выйти
+            </button>
+        </div>
+    </div>
+
+    <!-- Rejected Screen -->
+    <div class="auth-container pending-screen" id="rejected-screen">
+        <div class="auth-header" style="background: #c41e3a;">
+            <i class="fas fa-times-circle"></i>
+            <h1>Заявка отклонена</h1>
+            <p>Церковь Святой Марии</p>
+        </div>
+        <div class="auth-body" style="text-align: center;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: #c41e3a; margin-bottom: 1rem;"></i>
+            <h2 style="color: #1a2c42; margin-bottom: 1rem;">К сожалению...</h2>
+            <p style="color: #666; margin-bottom: 1rem;">
+                Ваша заявка была отклонена администратором.
+            </p>
+            <div id="rejection-reason" style="background: #f8d7da; padding: 1rem; border-radius: 6px; margin: 1rem 0; color: #721c24; text-align: left;">
+                <strong>Причина:</strong>
+                <p id="rejection-text" style="margin: 0.5rem 0 0;"></p>
+            </div>
+            <p style="color: #999; font-size: 0.9rem; margin: 1.5rem 0;">
+                Если вы считаете, что это ошибка, свяжитесь с церковью.
+            </p>
+            <button class="btn btn-primary" onclick="window.location.href='index.html'">
+                <i class="fas fa-home"></i> На сайт церкви
+            </button>
+            <button class="btn btn-outline" onclick="app.logout()" style="margin-top: 1rem; background: transparent; border-color: #c41e3a; color: #c41e3a;">
+                <i class="fas fa-sign-out-alt"></i> Выйти
+            </button>
+        </div>
+    </div>
+
     <script type="module">
-        // === FIREBASE IMPORTS (без пробелов в URL!) ===
+        // === FIREBASE IMPORTS ===
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
+        // === FIREBASE CONFIG ===
         const firebaseConfig = {
             apiKey: "AIzaSyC0YQBEy7yAQ14Ion-Vx3w99KNtG9kSHQw",
             authDomain: "stmariaulsk-vocaldb.firebaseapp.com",
@@ -223,227 +302,331 @@
             appId: "1:1014321374210:web:f228e994505553c741b31b"
         };
 
-        // === ИНИЦИАЛИЗАЦИЯ ===
-        let app, auth, db;
-        
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            console.log('✅ Firebase инициализирован');
-        } catch (error) {
-            console.error('❌ Ошибка Firebase:', error);
-            showAlert('Ошибка подключения к серверу. Обновите страницу.', 'error');
-        }
+        // === APP OBJECT ===
+        const app = {
+            auth: null,
+            db: null,
+            initialized: false,
 
-        let authCheckComplete = false;
-
-        // === ТАБЫ ===
-        window.switchTab = function(tab) {
-            document.querySelectorAll('.form-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
-            
-            if (tab === 'login') {
-                document.querySelector('.form-tab:nth-child(1)').classList.add('active');
-                document.getElementById('login-form').classList.add('active');
-            } else {
-                document.querySelector('.form-tab:nth-child(2)').classList.add('active');
-                document.getElementById('register-form').classList.add('active');
-            }
-            hideAlerts();
-        };
-
-        // === ВХОД ===
-        window.handleLogin = async function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('login-btn');
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Вход...';
-            
-            try {
-                console.log('🔐 Попытка входа:', email);
+            // Инициализация
+            async init() {
+                console.log('🚀 Инициализация vocal-login...');
                 
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-                console.log('✅ Успешный вход:', user.uid);
-                
-                // Загрузка данных с таймаутом
-                const userDoc = await Promise.race([
-                    getDoc(doc(db, 'users', user.uid)),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Таймаут')), 5000))
-                ]);
-                
-                if (!userDoc.exists()) {
-                    throw new Error('Профиль не найден');
+                try {
+                    const firebaseApp = initializeApp(firebaseConfig);
+                    this.auth = getAuth(firebaseApp);
+                    this.db = getFirestore(firebaseApp);
+                    console.log('✅ Firebase подключён');
+                } catch (error) {
+                    console.error('❌ Ошибка Firebase:', error);
+                    this.showAlert('Ошибка подключения к серверу', 'error');
+                    return;
                 }
-                
-                const userData = userDoc.data();
-                console.log('📄 Данные пользователя:', userData);
-                
-                // Сохраняем в localStorage
-                localStorage.setItem('user', JSON.stringify({
-                    uid: user.uid,
-                    email: user.email,
-                    name: userData.name,
-                    type: userData.type,
-                    phone: userData.phone
-                }));
-                
-                showAlert('Успешный вход! Перенаправление...', 'success');
-                
-                // === ИСПРАВЛЕНИЕ: редирект для всех типов, включая admin ===
-                setTimeout(() => {
-                    let targetPage;
-                    if (userData.type === 'admin') {
-                        targetPage = 'vocal-admin.html';
-                    } else if (userData.type === 'teacher') {
-                        targetPage = 'vocal-teacher.html';
-                    } else {
-                        targetPage = 'vocal-student.html';
-                    }
-                    console.log('🔄 Перенаправление на:', targetPage);
-                    window.location.href = targetPage;
-                }, 1000);
-                
-            } catch (error) {
-                console.error('❌ Ошибка входа:', error.message);
-                showAlert('Ошибка: ' + error.message, 'error');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти';
-            }
-        };
 
-        // === РЕГИСТРАЦИЯ ===
-        window.handleRegister = async function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('register-btn');
-            const name = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
-            const phone = document.getElementById('reg-phone').value;
-            const type = document.getElementById('reg-type').value;
-            const password = document.getElementById('reg-password').value;
-            const passwordConfirm = document.getElementById('reg-password-confirm').value;
-            
-            if (password !== passwordConfirm) {
-                showAlert('Пароли не совпадают', 'error');
-                return;
-            }
-            
-            // Блокируем регистрацию админов через форму
-            if (type === 'admin') {
-                showAlert('Регистрация администраторов отключена', 'error');
-                return;
-            }
-            
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Регистрация...';
-            
-            try {
-                console.log('📝 Регистрация:', email, type);
+                // Подписка на изменения авторизации
+                onAuthStateChanged(this.auth, async (user) => {
+                    await this.handleAuthChange(user);
+                });
+
+                console.log('✅ vocal-login готов');
+            },
+
+            // Переключение табов
+            switchTab(tab) {
+                document.querySelectorAll('.form-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
                 
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-                console.log('✅ Пользователь создан:', user.uid);
-                
-                // Сохранение в users
-                const userStatus = type === 'teacher' ? 'pending' : 'active';
-                await Promise.race([
-                    setDoc(doc(db, 'users', user.uid), {
-                        name, email, phone, type,
-                        createdAt: new Date().toISOString(),
-                        status: userStatus
-                    }),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Таймаут')), 5000))
-                ]);
-                
-                // Если преподаватель — создаём запись в teachers со статусом pending
-                if (type === 'teacher') {
-                    await setDoc(doc(db, 'teachers', user.uid), {
-                        name, email, phone,
-                        availability: {},
-                        status: 'pending',
-                        registeredAt: new Date().toISOString()
-                    });
+                if (tab === 'login') {
+                    document.querySelector('.form-tab:nth-child(1)').classList.add('active');
+                    document.getElementById('login-form').classList.add('active');
+                } else {
+                    document.querySelector('.form-tab:nth-child(2)').classList.add('active');
+                    document.getElementById('register-form').classList.add('active');
                 }
-                
-                localStorage.setItem('user', JSON.stringify({
-                    uid: user.uid,
-                    email: user.email,
-                    name, type, phone
-                }));
-                
-                showAlert('Регистрация успешна! Перенаправление...', 'success');
-                
-                setTimeout(() => {
-                    const targetPage = type === 'teacher' ? 'vocal-teacher.html' : 'vocal-student.html';
-                    console.log('🔄 Перенаправление на:', targetPage);
-                    window.location.href = targetPage;
-                }, 1000);
-                
-            } catch (error) {
-                console.error('❌ Ошибка регистрации:', error.message);
-                showAlert('Ошибка: ' + error.message, 'error');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-user-plus"></i> Зарегистрироваться';
-            }
-        };
+                this.hideAlerts();
+            },
 
-        // === УТИЛИТЫ ===
-        function showAlert(message, type) {
-            const errorAlert = document.getElementById('alert-error');
-            const successAlert = document.getElementById('alert-success');
-            errorAlert.style.display = 'none';
-            successAlert.style.display = 'none';
-            
-            if (type === 'error') {
-                errorAlert.textContent = message;
-                errorAlert.style.display = 'block';
-            } else {
-                successAlert.textContent = message;
-                successAlert.style.display = 'block';
-            }
-        }
+            // Обработка авторизации
+            async handleAuthChange(user) {
+                console.log('🔄 Auth change:', user ? user.email : 'null');
+                
+                if (this.initialized) {
+                    console.log('✅ Уже обработано');
+                    return;
+                }
 
-        function hideAlerts() {
-            document.getElementById('alert-error').style.display = 'none';
-            document.getElementById('alert-success').style.display = 'none';
-        }
+                // Если нет пользователя - показываем форму входа
+                if (!user) {
+                    this.showAuthForm();
+                    this.initialized = true;
+                    return;
+                }
 
-        // === AUTH STATE ===
-        onAuthStateChanged(auth, (user) => {
-            console.log('🔄 Auth state:', user ? user.email : 'null');
-            
-            if (authCheckComplete) return;
-            
-            if (user) {
-                const savedUser = JSON.parse(localStorage.getItem('user'));
-                if (savedUser && savedUser.type) {
-                    authCheckComplete = true;
-                    
-                    let targetPage;
-                    if (savedUser.type === 'admin') {
-                        targetPage = 'vocal-admin.html';
-                    } else if (savedUser.type === 'teacher') {
-                        targetPage = 'vocal-teacher.html';
-                    } else {
-                        targetPage = 'vocal-student.html';
+                try {
+                    // Загружаем данные пользователя
+                    const userDoc = await this.withTimeout(
+                        getDoc(doc(this.db, 'users', user.uid)),
+                        5000,
+                        'Таймаут загрузки профиля'
+                    );
+
+                    if (!userDoc.exists()) {
+                        throw new Error('Профиль не найден');
                     }
+
+                    const userData = userDoc.data();
+                    console.log('📄 Данные пользователя:', userData);
+
+                    // Сохраняем в localStorage
+                    localStorage.setItem('user', JSON.stringify({
+                        uid: user.uid,
+                        email: user.email,
+                        name: userData.name,
+                        type: userData.type,
+                        phone: userData.phone,
+                        status: userData.status
+                    }));
+
+                    // === ПРОВЕРКА СТАТУСА ===
+                    if (userData.status === 'pending') {
+                        // Показываем экран ожидания
+                        this.showPendingScreen();
+                        this.initialized = true;
+                        return;
+                    }
+
+                    if (userData.status === 'rejected') {
+                        // Показываем экран отклонения
+                        this.showRejectedScreen(userData.rejectionReason || 'Не указано');
+                        this.initialized = true;
+                        return;
+                    }
+
+                    if (userData.status === 'blocked') {
+                        this.showAlert('Ваш аккаунт заблокирован', 'error');
+                        await this.logout();
+                        return;
+                    }
+
+                    // === АКТИВНЫЙ ПОЛЬЗОВАТЕЛЬ - РЕДИРЕКТ ===
+                    this.showAlert('Успешный вход! Перенаправление...', 'success');
                     
-                    const currentPage = window.location.pathname;
-                    if (!currentPage.includes(targetPage)) {
+                    setTimeout(() => {
+                        let targetPage;
+                        if (userData.type === 'admin') {
+                            targetPage = 'vocal-admin.html';
+                        } else if (userData.type === 'teacher') {
+                            targetPage = 'vocal-teacher.html';
+                        } else {
+                            targetPage = 'vocal-student.html';
+                        }
                         console.log('🔄 Редирект на:', targetPage);
                         window.location.href = targetPage;
-                    }
+                    }, 1000);
+
+                    this.initialized = true;
+
+                } catch (error) {
+                    console.error('❌ Ошибка:', error);
+                    this.showAlert('Ошибка: ' + error.message, 'error');
+                    this.showAuthForm();
+                    this.initialized = true;
                 }
-            } else {
-                authCheckComplete = true;
+            },
+
+            // Показать форму авторизации
+            showAuthForm() {
+                document.getElementById('auth-container').style.display = 'block';
+                document.getElementById('pending-screen').classList.remove('active');
+                document.getElementById('rejected-screen').classList.remove('active');
+            },
+
+            // Показать экран ожидания
+            showPendingScreen() {
+                document.getElementById('auth-container').style.display = 'none';
+                document.getElementById('pending-screen').classList.add('active');
+                document.getElementById('rejected-screen').classList.remove('active');
+            },
+
+            // Показать экран отклонения
+            showRejectedScreen(reason) {
+                document.getElementById('auth-container').style.display = 'none';
+                document.getElementById('pending-screen').classList.remove('active');
+                document.getElementById('rejected-screen').classList.add('active');
+                document.getElementById('rejection-text').textContent = reason;
+            },
+
+            // Вход
+            async handleLogin(e) {
+                e.preventDefault();
+                const btn = document.getElementById('login-btn');
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner"></span> Вход...';
+                
+                try {
+                    console.log('🔐 Вход:', email);
+                    
+                    const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
+                    const user = userCredential.user;
+                    
+                    // handleAuthChange обработает редирект
+                    // Просто ждём
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти';
+                    }, 2000);
+                    
+                } catch (error) {
+                    console.error('❌ Ошибка входа:', error.message);
+                    this.showAlert('Ошибка: ' + error.message, 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти';
+                }
+            },
+
+            // Регистрация
+            async handleRegister(e) {
+                e.preventDefault();
+                const btn = document.getElementById('register-btn');
+                const name = document.getElementById('reg-name').value;
+                const email = document.getElementById('reg-email').value;
+                const phone = document.getElementById('reg-phone').value;
+                const type = document.getElementById('reg-type').value;
+                const password = document.getElementById('reg-password').value;
+                const passwordConfirm = document.getElementById('reg-password-confirm').value;
+                
+                if (password !== passwordConfirm) {
+                    this.showAlert('Пароли не совпадают', 'error');
+                    return;
+                }
+                
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner"></span> Регистрация...';
+                
+                try {
+                    console.log('📝 Регистрация:', email, type);
+                    
+                    // Создаём пользователя в Firebase Auth
+                    const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
+                    const user = userCredential.user;
+                    console.log('✅ Пользователь создан:', user.uid);
+                    
+                    // Сохраняем в users со статусом pending
+                    await this.withTimeout(
+                        setDoc(doc(this.db, 'users', user.uid), {
+                            name,
+                            email,
+                            phone,
+                            type,
+                            createdAt: new Date().toISOString(),
+                            status: 'pending'  // ← ВСЕ ждут подтверждения
+                        }),
+                        5000,
+                        'Таймаут сохранения'
+                    );
+                    
+                    // Создаём запись в type-specific коллекции
+                    if (type === 'teacher') {
+                        await setDoc(doc(this.db, 'teachers', user.uid), {
+                            name,
+                            email,
+                            phone,
+                            availability: {},
+                            status: 'pending',
+                            registeredAt: new Date().toISOString()
+                        });
+                    } else if (type === 'student') {
+                        await setDoc(doc(this.db, 'students', user.uid), {
+                            name,
+                            email,
+                            phone,
+                            status: 'pending',
+                            registeredAt: new Date().toISOString(),
+                            bookings: []
+                        });
+                    }
+                    
+                    // Сохраняем в localStorage
+                    localStorage.setItem('user', JSON.stringify({
+                        uid: user.uid,
+                        email: user.email,
+                        name,
+                        type,
+                        phone,
+                        status: 'pending'
+                    }));
+                    
+                    // Показываем экран ожидания
+                    this.showPendingScreen();
+                    this.showAlert('Регистрация успешна! Ожидайте подтверждения.', 'success');
+                    
+                } catch (error) {
+                    console.error('❌ Ошибка регистрации:', error);
+                    this.showAlert('Ошибка: ' + error.message, 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-user-plus"></i> Зарегистрироваться';
+                }
+            },
+
+            // Выход
+            async logout() {
+                try {
+                    await signOut(this.auth);
+                    localStorage.removeItem('user');
+                    this.initialized = false;
+                    this.showAuthForm();
+                    this.switchTab('login');
+                } catch (error) {
+                    this.showAlert('Ошибка выхода: ' + error.message, 'error');
+                }
+            },
+
+            // Утилита: таймаут для Promise
+            withTimeout(promise, ms, errorMessage) {
+                return Promise.race([
+                    promise,
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error(errorMessage)), ms)
+                    )
+                ]);
+            },
+
+            // Показать уведомление
+            showAlert(message, type) {
+                const errorAlert = document.getElementById('alert-error');
+                const successAlert = document.getElementById('alert-success');
+                
+                errorAlert.style.display = 'none';
+                successAlert.style.display = 'none';
+                
+                if (type === 'error') {
+                    errorAlert.textContent = message;
+                    errorAlert.style.display = 'block';
+                } else {
+                    successAlert.textContent = message;
+                    successAlert.style.display = 'block';
+                }
+                
+                setTimeout(() => {
+                    errorAlert.style.display = 'none';
+                    successAlert.style.display = 'none';
+                }, 5000);
+            },
+
+            hideAlerts() {
+                document.getElementById('alert-error').style.display = 'none';
+                document.getElementById('alert-success').style.display = 'none';
             }
-        });
+        };
+
+        // === ЗАПУСК ===
+        app.init();
         
-        console.log('🚀 Скрипт загружен');
+        // Экспорт для HTML onclick
+        window.app = app;
     </script>
 </body>
 </html>
