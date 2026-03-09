@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель | Вокал</title>
     
     <!-- 🔥 ОТКЛЮЧЕНИЕ КЭШИРОВАНИЯ -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="cache-control" content="no-cache">
-    <title>Админ-панель | Вокал</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -550,17 +550,23 @@
             allBookings: [],
             initialized: false,
 
-            // Инициализация
             async init() {
-                console.log('🚀 Инициализация vocal-admin...');
+                console.log('🚀 vocal-admin init');
+                
+                // 🔥 Очищаем параметр кэша из URL
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('t')) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    console.log('✅ Cache param cleared');
+                }
                 
                 try {
                     const firebaseApp = initializeApp(firebaseConfig);
                     this.auth = getAuth(firebaseApp);
                     this.db = getFirestore(firebaseApp);
-                    console.log('✅ Firebase подключён');
+                    console.log('✅ Firebase ready');
                 } catch (error) {
-                    console.error('❌ Ошибка Firebase:', error);
+                    console.error('❌ Firebase error:', error);
                     this.showAlert('Ошибка подключения к серверу', 'error');
                     return;
                 }
@@ -569,22 +575,27 @@
                     await this.handleAuthChange(user);
                 });
 
-                console.log('✅ vocal-admin готов');
+                console.log('✅ vocal-admin ready');
             },
 
-            // Обработка авторизации
             async handleAuthChange(user) {
-                console.log('🔄 Auth change:', user ? user.email : 'null');
+                console.log('🔄 Auth state:', user ? user.email : 'null');
                 
-                if (this.initialized) return;
+                if (this.initialized) {
+                    console.log('✅ Already initialized');
+                    return;
+                }
 
                 if (!user) {
-                    console.log('❌ Нет пользователя → редирект');
-                    window.location.href = 'vocal-login.html';
+                    console.log('❌ No user → redirect to login');
+                    window.location.href = 'vocal-login.html?t=' + Date.now();
                     return;
                 }
 
                 try {
+                    // 🔥 Ждём стабильности auth
+                    await new Promise(resolve => setTimeout(resolve, 300));
+
                     const userDoc = await this.withTimeout(
                         getDoc(doc(this.db, 'users', user.uid)),
                         5000,
@@ -594,13 +605,28 @@
                     if (!userDoc.exists()) throw new Error('Профиль не найден');
                     
                     const data = userDoc.data();
-                    
+                    console.log('📄 User data:', data);
+
+                    // Проверка: только админ
                     if (data.type !== 'admin') {
-                        console.log('❌ Не админ → редирект');
+                        console.log('❌ Not admin (type: ' + data.type + ') → redirect');
                         this.showAlert('Доступ запрещён. Требуется роль администратора.', 'error');
                         setTimeout(() => {
-                            window.location.href = data.type === 'teacher' ? 'vocal-teacher.html' : 'vocal-student.html';
+                            if (data.type === 'teacher') {
+                                window.location.href = 'vocal-teacher.html?t=' + Date.now();
+                            } else if (data.type === 'student') {
+                                window.location.href = 'vocal-student.html?t=' + Date.now();
+                            } else {
+                                window.location.href = 'vocal-login.html?t=' + Date.now();
+                            }
                         }, 2000);
+                        return;
+                    }
+
+                    // Проверка статуса
+                    if (data.status !== 'active') {
+                        this.showAlert('Ваш аккаунт не активен', 'error');
+                        await this.logout();
                         return;
                     }
 
@@ -609,15 +635,16 @@
                     
                     await this.loadData();
                     this.initialized = true;
-                    console.log('✅ Админ-панель готова');
+                    console.log('✅ Admin panel ready');
 
                 } catch (error) {
-                    console.error('❌ Ошибка:', error);
+                    console.error('❌ Error:', error);
                     this.showAlert('Ошибка: ' + error.message, 'error');
+                    localStorage.removeItem('user');
+                    window.location.href = 'vocal-login.html?t=' + Date.now();
                 }
             },
 
-            // Загрузка всех данных
             async loadData() {
                 await Promise.all([
                     this.loadUsers(),
@@ -627,7 +654,6 @@
                 ]);
             },
 
-            // Загрузка пользователей
             async loadUsers() {
                 try {
                     const snapshot = await this.withTimeout(
@@ -645,7 +671,6 @@
                 }
             },
 
-            // Загрузка записей
             async loadBookings() {
                 try {
                     const q = query(collection(this.db, 'bookings'), orderBy('createdAt', 'desc'), limit(100));
@@ -662,7 +687,6 @@
                 }
             },
 
-            // Загрузка статистики
             async loadStats() {
                 const pending = this.allUsers.filter(u => u.status === 'pending').length;
                 document.getElementById('stat-users').textContent = this.allUsers.length;
@@ -671,7 +695,6 @@
                 document.getElementById('stat-pending').textContent = pending;
             },
 
-            // Загрузка настроек
             async loadSettings() {
                 try {
                     const settingsDoc = await getDoc(doc(this.db, 'settings', 'vocal'));
@@ -687,7 +710,6 @@
                 }
             },
 
-            // Переключение вкладок
             switchTab(tab) {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -695,7 +717,6 @@
                 document.getElementById('tab-' + tab).classList.add('active');
             },
 
-            // Рендер ожидающих пользователей
             renderPending() {
                 const tbody = document.getElementById('pending-list');
                 const pending = this.allUsers.filter(u => u.status === 'pending');
@@ -719,17 +740,14 @@
                 `).join('');
             },
 
-            // Рендер студентов
             renderStudents() {
                 this._renderUserList('students', 'student');
             },
 
-            // Рендер преподавателей
             renderTeachers() {
                 this._renderUserList('teachers', 'teacher');
             },
 
-            // Общая функция рендера пользователей
             _renderUserList(listId, userType) {
                 const tbody = document.getElementById(listId + '-list');
                 const search = document.getElementById(listId + '-search')?.value.toLowerCase() || '';
@@ -770,12 +788,10 @@
                 }).join('');
             },
 
-            // Фильтрация
             filterStudents() { this.renderStudents(); },
             filterTeachers() { this.renderTeachers(); },
             filterBookings() { this.renderBookings(); },
 
-            // Рендер записей
             renderBookings() {
                 const tbody = document.getElementById('bookings-list');
                 const search = document.getElementById('booking-search')?.value.toLowerCase() || '';
@@ -814,8 +830,6 @@
                 }).join('');
             },
 
-            // === УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ ===
-            
             editUser(userId) {
                 const user = this.allUsers.find(u => u.id === userId);
                 if (!user) return;
@@ -851,7 +865,6 @@
                         'Таймаут'
                     );
                     
-                    // Обновляем teachers/students если нужно
                     if (updates.type === 'teacher') {
                         await setDoc(doc(this.db, 'teachers', userId), {
                             name: updates.name,
@@ -873,13 +886,11 @@
                 if (!confirm('Вы уверены? Это удалит пользователя и все его записи!')) return;
                 
                 try {
-                    // Удаляем записи
                     const q = query(collection(this.db, 'bookings'), where('studentId', '==', userId));
                     const snapshot = await getDocs(q);
                     const deletes = snapshot.docs.map(d => deleteDoc(d.ref));
                     await Promise.all(deletes);
                     
-                    // Удаляем пользователя
                     await deleteDoc(doc(this.db, 'users', userId));
                     await deleteDoc(doc(this.db, 'teachers', userId)).catch(() => {});
                     
@@ -890,8 +901,6 @@
                 }
             },
 
-            // === МОДЕРАЦИЯ ===
-            
             async approveUser(userId, userType) {
                 if (!confirm('Подтвердить этого пользователя?')) return;
                 
@@ -955,8 +964,6 @@
                 }
             },
 
-            // === УПРАВЛЕНИЕ ЗАПИСЯМИ ===
-            
             editBooking(bookingId) {
                 const booking = this.allBookings.find(b => b.id === bookingId);
                 if (!booking) return;
@@ -1013,8 +1020,6 @@
                 }
             },
 
-            // === НАСТРОЙКИ ===
-            
             async saveSettings() {
                 try {
                     await this.withTimeout(
@@ -1077,8 +1082,6 @@
                 }
             },
 
-            // === УТИЛИТЫ ===
-            
             closeModal(modalId) {
                 document.getElementById('modal-' + modalId).classList.remove('active');
             },
@@ -1087,7 +1090,7 @@
                 try {
                     await signOut(this.auth);
                     localStorage.removeItem('user');
-                    window.location.href = 'vocal-login.html';
+                    window.location.href = 'vocal-login.html?t=' + Date.now();
                 } catch (error) {
                     this.showAlert('Ошибка выхода: ' + error.message, 'error');
                 }
@@ -1126,10 +1129,9 @@
             }
         };
 
-        // === ЗАПУСК ===
+        // === INIT ===
         app.init();
         window.app = app;
     </script>
 </body>
 </html>
-
