@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кабинет преподавателя | Вокал</title>
     
     <!-- 🔥 ОТКЛЮЧЕНИЕ КЭШИРОВАНИЯ -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="cache-control" content="no-cache">
-    <title>Кабинет преподавателя | Вокал</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -234,13 +234,14 @@
         
         .loading { text-align: center; padding: 2rem; color: #666; }
         .empty { text-align: center; padding: 2rem; color: #999; }
+        
         .spinner {
             display: inline-block;
             width: 16px;
             height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 2px solid rgba(0,0,0,0.3);
             border-radius: 50%;
-            border-top-color: #fff;
+            border-top-color: #1a2c42;
             animation: spin 1s linear infinite;
             vertical-align: middle;
         }
@@ -446,17 +447,23 @@
             pendingSlotDate: null,
             initialized: false,
 
-            // Инициализация
             async init() {
-                console.log('🚀 Инициализация vocal-teacher...');
+                console.log('🚀 vocal-teacher init');
+                
+                // 🔥 Очищаем параметр кэша из URL
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('t')) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    console.log('✅ Cache param cleared');
+                }
                 
                 try {
                     const firebaseApp = initializeApp(firebaseConfig);
                     this.auth = getAuth(firebaseApp);
                     this.db = getFirestore(firebaseApp);
-                    console.log('✅ Firebase подключён');
+                    console.log('✅ Firebase ready');
                 } catch (error) {
-                    console.error('❌ Ошибка Firebase:', error);
+                    console.error('❌ Firebase error:', error);
                     this.showAlert('Ошибка подключения к серверу', 'error');
                     return;
                 }
@@ -465,22 +472,27 @@
                     await this.handleAuthChange(user);
                 });
 
-                console.log('✅ vocal-teacher готов');
+                console.log('✅ vocal-teacher ready');
             },
 
-            // Обработка авторизации
             async handleAuthChange(user) {
-                console.log('🔄 Auth change:', user ? user.email : 'null');
+                console.log('🔄 Auth state:', user ? user.email : 'null');
                 
-                if (this.initialized) return;
+                if (this.initialized) {
+                    console.log('✅ Already initialized');
+                    return;
+                }
 
                 if (!user) {
-                    console.log('❌ Нет пользователя → редирект');
-                    window.location.href = 'vocal-login.html';
+                    console.log('❌ No user → redirect to login');
+                    window.location.href = 'vocal-login.html?t=' + Date.now();
                     return;
                 }
 
                 try {
+                    // 🔥 Ждём стабильности auth
+                    await new Promise(resolve => setTimeout(resolve, 300));
+
                     const userDoc = await this.withTimeout(
                         getDoc(doc(this.db, 'users', user.uid)),
                         5000,
@@ -490,17 +502,17 @@
                     if (!userDoc.exists()) throw new Error('Профиль не найден');
                     
                     const data = userDoc.data();
-                    console.log('📄 Данные:', data);
+                    console.log('📄 User data:', data);
 
-                    // Проверка типа пользователя
+                    // Проверка типа
                     if (data.type !== 'teacher') {
-                        console.log('❌ Не преподаватель (тип: ' + data.type + ') → редирект');
+                        console.log('❌ Not teacher (type: ' + data.type + ') → redirect');
                         if (data.type === 'admin') {
-                            window.location.href = 'vocal-admin.html';
+                            window.location.href = 'vocal-admin.html?t=' + Date.now();
                         } else if (data.type === 'student') {
-                            window.location.href = 'vocal-student.html';
+                            window.location.href = 'vocal-student.html?t=' + Date.now();
                         } else {
-                            window.location.href = 'vocal-login.html';
+                            window.location.href = 'vocal-login.html?t=' + Date.now();
                         }
                         return;
                     }
@@ -544,22 +556,22 @@
                     
                     this.renderDays();
                     this.initialized = true;
-                    console.log('✅ Инициализация завершена');
+                    console.log('✅ Initialization complete');
 
                 } catch (error) {
-                    console.error('❌ Ошибка:', error);
+                    console.error('❌ Error:', error);
                     this.showAlert('Ошибка: ' + error.message, 'error');
+                    localStorage.removeItem('user');
+                    window.location.href = 'vocal-login.html?t=' + Date.now();
                 }
             },
 
-            // Показать экран ожидания
             showPendingScreen() {
                 document.getElementById('main-content').style.display = 'none';
                 document.getElementById('pending-screen').classList.add('active');
                 document.getElementById('rejected-screen').classList.remove('active');
             },
 
-            // Показать экран отклонения
             showRejectedScreen(reason) {
                 document.getElementById('main-content').style.display = 'none';
                 document.getElementById('pending-screen').classList.remove('active');
@@ -567,18 +579,16 @@
                 document.getElementById('rejection-reason').textContent = reason;
             },
 
-            // Выход
             async logout() {
                 try {
                     await signOut(this.auth);
                     localStorage.removeItem('user');
-                    window.location.href = 'vocal-login.html';
+                    window.location.href = 'vocal-login.html?t=' + Date.now();
                 } catch (error) {
                     this.showAlert('Ошибка выхода: ' + error.message, 'error');
                 }
             },
 
-            // Загрузка доступности
             async loadAvailability() {
                 try {
                     const teacherDoc = await this.withTimeout(
@@ -595,13 +605,11 @@
                 }
             },
 
-            // Изменение периода
             changePeriod() {
                 this.currentPeriod = parseInt(document.getElementById('period-select').value);
                 this.renderDays();
             },
 
-            // Рендер дней
             renderDays() {
                 const grid = document.getElementById('days-grid');
                 grid.innerHTML = '';
@@ -656,19 +664,16 @@
                 }
             },
 
-            // Открытие модального окна добавления слота
             openAddSlotModal(dateStr) {
                 this.pendingSlotDate = dateStr;
                 document.getElementById('modal-add-slot').classList.add('active');
             },
 
-            // Закрытие модального окна
             closeModal(modalId) {
                 document.getElementById('modal-' + modalId).classList.remove('active');
                 this.pendingSlotDate = null;
             },
 
-            // Подтверждение добавления слота
             confirmAddSlot() {
                 if (!this.pendingSlotDate) return;
                 const time = document.getElementById('new-slot-time').value;
@@ -677,7 +682,6 @@
                 document.getElementById('new-slot-time').value = '10:00';
             },
 
-            // Добавление слота
             addTimeSlot(dateStr, time) {
                 if (!time || !/^\d{2}:\d{2}$/.test(time)) {
                     this.showAlert('Некорректное время. Используйте формат ЧЧ:ММ', 'error');
@@ -695,7 +699,6 @@
                 }
             },
 
-            // Удаление слота
             removeSlot(dateStr, time, event) {
                 event.stopPropagation();
                 if (!confirm(`Удалить слот ${time} на ${this.formatDate(dateStr)}?`)) return;
@@ -710,7 +713,6 @@
                 }
             },
 
-            // Копирование слотов на неделю вперёд
             copySlots(dateStr) {
                 const slots = this.availability[dateStr] || [];
                 if (slots.length === 0) {
@@ -739,7 +741,6 @@
                 this.showAlert(`Скопировано на ${copied} дней вперёд`, 'success');
             },
 
-            // Очистка дня
             clearDaySlots(dateStr) {
                 if (!confirm(`Очистить все слоты на ${this.formatDate(dateStr)}?`)) return;
                 delete this.availability[dateStr];
@@ -747,7 +748,6 @@
                 this.showAlert('День очищен', 'success');
             },
 
-            // Добавить время ко всем дням
             addTimeSlotToAll(time) {
                 if (!confirm(`Добавить ${time} ко всем дням на ${this.currentPeriod} дней?`)) return;
                 
@@ -773,7 +773,6 @@
                 this.showAlert(`Добавлено ${time} на ${added} дней`, 'success');
             },
 
-            // Копировать с прошлой недели
             copyFromPreviousWeek() {
                 const today = new Date();
                 const prevWeekStart = new Date(today);
@@ -800,7 +799,6 @@
                 this.showAlert(`Скопировано с прошлой недели (${copied} дней)`, 'success');
             },
 
-            // Очистить всё
             clearAllSlots() {
                 if (!confirm('Вы уверены? Это удалит ВСЮ вашу доступность!')) return;
                 this.availability = {};
@@ -808,7 +806,6 @@
                 this.showAlert('Вся доступность очищена', 'success');
             },
 
-            // Сохранение доступности
             async saveAvailability() {
                 const btn = document.getElementById('save-availability-btn');
                 btn.disabled = true;
@@ -838,7 +835,6 @@
                 btn.innerHTML = '<i class="fas fa-save"></i> Сохранить доступность';
             },
 
-            // Загрузка записей
             async loadBookings() {
                 const tbody = document.getElementById('bookings-list');
                 tbody.innerHTML = '<tr><td colspan="6" class="loading">Загрузка...</td></tr>';
@@ -897,7 +893,6 @@
                 }
             },
 
-            // Подтверждение записи
             async confirmBooking(bookingId) {
                 if (!confirm('Подтвердить запись?')) return;
                 try {
@@ -912,7 +907,6 @@
                 }
             },
 
-            // Отмена записи
             async cancelBooking(bookingId) {
                 if (!confirm('Отменить запись?')) return;
                 try {
@@ -927,7 +921,6 @@
                 }
             },
 
-            // Утилита: таймаут
             withTimeout(promise, ms, errorMessage) {
                 return Promise.race([
                     promise,
@@ -937,7 +930,6 @@
                 ]);
             },
 
-            // Форматирование даты
             formatDate(dateStr) {
                 if (!dateStr) return '';
                 return new Date(dateStr).toLocaleDateString('ru-RU', {
@@ -945,12 +937,10 @@
                 });
             },
 
-            // Capitalize first letter
             capitalizeFirst(string) {
                 return string.charAt(0).toUpperCase() + string.slice(1);
             },
 
-            // Показать уведомление
             showAlert(message, type) {
                 const errorAlert = document.getElementById('alert-error');
                 const successAlert = document.getElementById('alert-success');
@@ -973,10 +963,9 @@
             }
         };
 
-        // === ЗАПУСК ===
+        // === INIT ===
         app.init();
         window.app = app;
     </script>
 </body>
 </html>
-
