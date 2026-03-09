@@ -45,7 +45,7 @@
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 1rem;
             margin-bottom: 2rem;
         }
@@ -101,6 +101,8 @@
         .badge-confirmed { background: #28a745; color: white; }
         .badge-pending { background: #ffc107; color: #333; }
         .badge-cancelled { background: #c41e3a; color: white; }
+        .badge-rejected { background: #6c757d; color: white; }
+        .badge-blocked { background: #343a40; color: white; }
         
         .search-box {
             display: flex;
@@ -126,7 +128,7 @@
             justify-content: center;
             z-index: 2000;
         }
-        .modal.active { display: flex; }
+        .modal.active { display: flex !important; }
         .modal-content {
             background: white;
             border-radius: 8px;
@@ -142,7 +144,8 @@
             padding: 1.5rem 2rem;
             border-bottom: 1px solid #f4f1ea;
         }
-        .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+        .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; }
+        .modal-close:hover { color: #c41e3a; }
         .modal-body { padding: 2rem; }
         .modal-footer {
             display: flex;
@@ -150,17 +153,20 @@
             justify-content: flex-end;
             padding: 1.5rem 2rem;
             border-top: 1px solid #f4f1ea;
+            flex-wrap: wrap;
         }
         
         .form-group { margin-bottom: 1.5rem; }
         .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #1a2c42; }
-        .form-group input, .form-group select {
+        .form-group input, .form-group select, .form-group textarea {
             width: 100%;
             padding: 0.9rem;
             border: 2px solid #f4f1ea;
             border-radius: 6px;
             font-size: 1rem;
+            font-family: inherit;
         }
+        .form-group textarea { min-height: 80px; resize: vertical; }
         
         .alert {
             padding: 1rem;
@@ -173,11 +179,36 @@
         
         .action-btns { display: flex; gap: 0.3rem; flex-wrap: wrap; }
         
+        .loading { text-align: center; padding: 2rem; color: #666; }
+        .empty { text-align: center; padding: 2rem; color: #999; }
+        
+        .pending-section {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1.5rem;
+            border-radius: 0 6px 6px 0;
+            margin-bottom: 2rem;
+        }
+        .pending-section h3 { color: #856404; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0,0,0,0.3);
+            border-radius: 50%;
+            border-top-color: #1a2c42;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
         @media (max-width: 768px) {
             .header { flex-direction: column; text-align: center; }
             .main { padding: 1rem; }
             table { overflow-x: auto; display: block; }
             .tabs { overflow-x: auto; padding-bottom: 0.5rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -185,11 +216,11 @@
     <header class="header">
         <h1><i class="fas fa-shield-alt"></i> Админ-панель вокала</h1>
         <div class="user-info">
-            <span id="admin-name">Загрузка...</span>
+            <span id="admin-name"></span>
             <button class="btn btn-outline" onclick="window.location.href='index.html'">
                 <i class="fas fa-home"></i> На сайт
             </button>
-            <button class="btn btn-danger" onclick="logout()">
+            <button class="btn btn-danger" onclick="app.logout()">
                 <i class="fas fa-sign-out-alt"></i> Выход
             </button>
         </div>
@@ -212,36 +243,64 @@
                 <div class="label">Преподавателей</div>
             </div>
             <div class="stat-card">
-                <i class="fas fa-calendar-check"></i>
-                <div class="number" id="stat-bookings">0</div>
-                <div class="label">Записей</div>
-            </div>
-            <div class="stat-card">
                 <i class="fas fa-clock"></i>
                 <div class="number" id="stat-pending">0</div>
                 <div class="label">Ожидают</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-calendar-check"></i>
+                <div class="number" id="stat-bookings">0</div>
+                <div class="label">Записей</div>
             </div>
         </div>
 
         <!-- Tabs -->
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('users')"><i class="fas fa-users"></i> Пользователи</button>
-            <button class="tab" onclick="switchTab('bookings')"><i class="fas fa-calendar"></i> Записи</button>
-            <button class="tab" onclick="switchTab('settings')"><i class="fas fa-cog"></i> Настройки</button>
+            <button class="tab active" onclick="app.switchTab('pending')"><i class="fas fa-clock"></i> Ожидают</button>
+            <button class="tab" onclick="app.switchTab('students')"><i class="fas fa-user-graduate"></i> Студенты</button>
+            <button class="tab" onclick="app.switchTab('teachers')"><i class="fas fa-chalkboard-teacher"></i> Преподаватели</button>
+            <button class="tab" onclick="app.switchTab('bookings')"><i class="fas fa-calendar"></i> Записи</button>
+            <button class="tab" onclick="app.switchTab('settings')"><i class="fas fa-cog"></i> Настройки</button>
         </div>
 
-        <!-- Users Tab -->
-        <div class="tab-content active" id="tab-users">
+        <!-- Pending Tab -->
+        <div class="tab-content active" id="tab-pending">
+            <div class="card pending-section">
+                <h3><i class="fas fa-hourglass-half"></i> Ожидают подтверждения</h3>
+                <p style="color: #856404; margin: 0;">
+                    Новые пользователи ждут вашего подтверждения. Подтвердите или отклоните их заявки.
+                </p>
+            </div>
             <div class="card">
-                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                    <h2><i class="fas fa-users"></i> Все пользователи</h2>
-                    <div class="search-box" style="margin: 0;">
-                        <input type="text" id="user-search" placeholder="Поиск по имени или email..." oninput="filterUsers()">
-                        <select id="user-filter" onchange="filterUsers()">
-                            <option value="all">Все типы</option>
-                            <option value="student">Студенты</option>
-                            <option value="teacher">Преподаватели</option>
-                            <option value="admin">Админы</option>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Имя</th>
+                            <th>Email</th>
+                            <th>Тип</th>
+                            <th>Дата регистрации</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pending-list">
+                        <tr><td colspan="5" class="loading">Загрузка...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Students Tab -->
+        <div class="tab-content" id="tab-students">
+            <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;">
+                    <h2><i class="fas fa-user-graduate"></i> Студенты</h2>
+                    <div class="search-box" style="margin:0;">
+                        <input type="text" id="student-search" placeholder="Поиск..." oninput="app.filterStudents()">
+                        <select id="student-status-filter" onchange="app.filterStudents()">
+                            <option value="all">Все статусы</option>
+                            <option value="active">Активные</option>
+                            <option value="blocked">Заблокированные</option>
+                            <option value="rejected">Отклонённые</option>
                         </select>
                     </div>
                 </div>
@@ -251,14 +310,44 @@
                             <th>Имя</th>
                             <th>Email</th>
                             <th>Телефон</th>
-                            <th>Тип</th>
-                            <th>Дата регистрации</th>
                             <th>Статус</th>
                             <th>Действия</th>
                         </tr>
                     </thead>
-                    <tbody id="users-list">
-                        <tr><td colspan="7" style="text-align: center;">Загрузка...</td></tr>
+                    <tbody id="students-list">
+                        <tr><td colspan="5" class="loading">Загрузка...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Teachers Tab -->
+        <div class="tab-content" id="tab-teachers">
+            <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;">
+                    <h2><i class="fas fa-chalkboard-teacher"></i> Преподаватели</h2>
+                    <div class="search-box" style="margin:0;">
+                        <input type="text" id="teacher-search" placeholder="Поиск..." oninput="app.filterTeachers()">
+                        <select id="teacher-status-filter" onchange="app.filterTeachers()">
+                            <option value="all">Все статусы</option>
+                            <option value="active">Активные</option>
+                            <option value="blocked">Заблокированные</option>
+                            <option value="rejected">Отклонённые</option>
+                        </select>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Имя</th>
+                            <th>Email</th>
+                            <th>Телефон</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teachers-list">
+                        <tr><td colspan="5" class="loading">Загрузка...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -267,11 +356,11 @@
         <!-- Bookings Tab -->
         <div class="tab-content" id="tab-bookings">
             <div class="card">
-                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;">
                     <h2><i class="fas fa-calendar-check"></i> Все записи</h2>
-                    <div class="search-box" style="margin: 0;">
-                        <input type="text" id="booking-search" placeholder="Поиск..." oninput="filterBookings()">
-                        <select id="booking-status-filter" onchange="filterBookings()">
+                    <div class="search-box" style="margin:0;">
+                        <input type="text" id="booking-search" placeholder="Поиск..." oninput="app.filterBookings()">
+                        <select id="booking-status-filter" onchange="app.filterBookings()">
                             <option value="all">Все статусы</option>
                             <option value="pending">Ожидают</option>
                             <option value="confirmed">Подтверждено</option>
@@ -292,7 +381,7 @@
                         </tr>
                     </thead>
                     <tbody id="bookings-list">
-                        <tr><td colspan="7" style="text-align: center;">Загрузка...</td></tr>
+                        <tr><td colspan="7" class="loading">Загрузка...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -330,7 +419,7 @@
                     </select>
                 </div>
                 
-                <button class="btn btn-accent" onclick="saveSettings()">
+                <button class="btn btn-accent" onclick="app.saveSettings()">
                     <i class="fas fa-save"></i> Сохранить настройки
                 </button>
             </div>
@@ -340,10 +429,10 @@
                 <p style="color: #666; margin-bottom: 1rem;">Экспорт или очистка данных системы</p>
                 
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <button class="btn btn-outline" onclick="exportData()">
+                    <button class="btn btn-outline" onclick="app.exportData()">
                         <i class="fas fa-download"></i> Экспорт всех данных
                     </button>
-                    <button class="btn btn-danger" onclick="clearOldBookings()">
+                    <button class="btn btn-danger" onclick="app.clearOldBookings()">
                         <i class="fas fa-trash"></i> Удалить старые записи (>30 дней)
                     </button>
                 </div>
@@ -356,7 +445,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Редактировать пользователя</h3>
-                <button class="modal-close" onclick="closeModal('edit-user')">&times;</button>
+                <button class="modal-close" onclick="app.closeModal('edit-user')">&times;</button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="edit-user-id">
@@ -385,6 +474,7 @@
                     <select id="edit-user-status">
                         <option value="active">Активен</option>
                         <option value="blocked">Заблокирован</option>
+                        <option value="rejected">Отклонён</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -393,8 +483,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeModal('edit-user')">Отмена</button>
-                <button class="btn btn-accent" onclick="saveUserEdit()">Сохранить</button>
+                <button class="btn btn-outline" onclick="app.closeModal('edit-user')">Отмена</button>
+                <button class="btn btn-accent" onclick="app.saveUserEdit()">Сохранить</button>
             </div>
         </div>
     </div>
@@ -404,7 +494,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Управление записью</h3>
-                <button class="modal-close" onclick="closeModal('edit-booking')">&times;</button>
+                <button class="modal-close" onclick="app.closeModal('edit-booking')">&times;</button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="edit-booking-id">
@@ -418,22 +508,24 @@
                 </div>
                 <div class="form-group">
                     <label>Комментарий администратора</label>
-                    <textarea id="edit-booking-admin-comment" rows="3"></textarea>
+                    <textarea id="edit-booking-admin-comment"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeModal('edit-booking')">Отмена</button>
-                <button class="btn btn-accent" onclick="saveBookingEdit()">Сохранить</button>
-                <button class="btn btn-danger" onclick="deleteBooking()">Удалить</button>
+                <button class="btn btn-outline" onclick="app.closeModal('edit-booking')">Отмена</button>
+                <button class="btn btn-accent" onclick="app.saveBookingEdit()">Сохранить</button>
+                <button class="btn btn-danger" onclick="app.deleteBooking()">Удалить</button>
             </div>
         </div>
     </div>
 
     <script type="module">
+        // === FIREBASE IMPORTS (clean URLs) ===
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, doc, getDoc, collection, getDocs, query, where, updateDoc, deleteDoc, setDoc, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
+        // === FIREBASE CONFIG ===
         const firebaseConfig = {
             apiKey: "AIzaSyC0YQBEy7yAQ14Ion-Vx3w99KNtG9kSHQw",
             authDomain: "stmariaulsk-vocaldb.firebaseapp.com",
@@ -443,421 +535,594 @@
             appId: "1:1014321374210:web:f228e994505553c741b31b"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // === APP OBJECT ===
+        const app = {
+            auth: null,
+            db: null,
+            user: null,
+            allUsers: [],
+            allBookings: [],
+            initialized: false,
 
-        let currentUser = null;
-        let allUsers = [];
-        let allBookings = [];
-
-        // Check auth and admin status
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = 'vocal-login.html';
-                return;
-            }
-            
-            // Check if user is admin
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            if (!userDoc.exists() || userDoc.data().type !== 'admin') {
-                showAlert('Доступ запрещён. Требуется роль администратора.', 'error');
-                setTimeout(() => window.location.href = 'vocal-login.html', 2000);
-                return;
-            }
-            
-            currentUser = {
-                uid: user.uid,
-                ...userDoc.data()
-            };
-            
-            document.getElementById('admin-name').textContent = currentUser.name;
-            await loadData();
-        });
-
-        window.logout = async function() {
-            await signOut(auth);
-            localStorage.removeItem('user');
-            window.location.href = 'vocal-login.html';
-        };
-
-        async function loadData() {
-            await Promise.all([loadUsers(), loadBookings(), loadStats(), loadSettings()]);
-        }
-
-        async function loadUsers() {
-            const usersRef = collection(db, 'users');
-            const snapshot = await getDocs(usersRef);
-            allUsers = [];
-            snapshot.forEach(doc => allUsers.push({ id: doc.id, ...doc.data() }));
-            renderUsers();
-        }
-
-        async function loadBookings() {
-            const bookingsRef = collection(db, 'bookings');
-            const q = query(bookingsRef, orderBy('createdAt', 'desc'), limit(100));
-            const snapshot = await getDocs(q);
-            allBookings = [];
-            snapshot.forEach(doc => allBookings.push({ id: doc.id, ...doc.data() }));
-            renderBookings();
-        }
-
-        async function loadStats() {
-            document.getElementById('stat-users').textContent = allUsers.length;
-            document.getElementById('stat-teachers').textContent = allUsers.filter(u => u.type === 'teacher').length;
-            document.getElementById('stat-bookings').textContent = allBookings.length;
-            document.getElementById('stat-pending').textContent = allBookings.filter(b => b.status === 'pending').length;
-        }
-
-        async function loadSettings() {
-            const settingsDoc = await getDoc(doc(db, 'settings', 'vocal'));
-            if (settingsDoc.exists()) {
-                const settings = settingsDoc.data();
-                document.getElementById('setting-duration').value = settings.duration || '60';
-                document.getElementById('setting-max-per-day').value = settings.maxPerDay || '1';
-                document.getElementById('setting-auto-cancel').value = settings.autoCancelHours || '24';
-                document.getElementById('setting-email-notifications').value = settings.emailNotifications !== false ? 'true' : 'false';
-            }
-        }
-
-        function renderUsers() {
-            const tbody = document.getElementById('users-list');
-            const search = document.getElementById('user-search').value.toLowerCase();
-            const filter = document.getElementById('user-filter').value;
-            
-            let filtered = allUsers.filter(u => {
-                const matchesSearch = u.name?.toLowerCase().includes(search) || u.email?.toLowerCase().includes(search);
-                const matchesFilter = filter === 'all' || u.type === filter;
-                return matchesSearch && matchesFilter;
-            });
-            
-            tbody.innerHTML = '';
-            if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Пользователи не найдены</td></tr>';
-                return;
-            }
-            
-            filtered.forEach(user => {
-                const tr = document.createElement('tr');
-                const typeBadge = `badge-${user.type}`;
-                const typeText = user.type === 'student' ? 'Студент' : user.type === 'teacher' ? 'Преподаватель' : 'Админ';
-                const statusText = user.status === 'active' ? 'Активен' : 'Заблокирован';
+            // Инициализация
+            async init() {
+                console.log('🚀 Инициализация vocal-admin...');
                 
-                tr.innerHTML = `
-                    <td>${user.name || '—'}</td>
-                    <td>${user.email || '—'}</td>
-                    <td>${user.phone || '—'}</td>
-                    <td><span class="badge ${typeBadge}">${typeText}</span></td>
-                    <td>${user.createdAt ? new Date(user.createdAt).toLocaleDateString('ru-RU') : '—'}</td>
-                    <td>${statusText}</td>
-                    <td class="action-btns">
-                        <button class="btn btn-sm btn-accent" onclick="editUser('${user.id}')"><i class="fas fa-edit"></i></button>
-                        ${user.type !== 'admin' ? `<button class="btn btn-sm btn-danger" onclick="deleteUser('${user.id}')"><i class="fas fa-trash"></i></button>` : ''}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+                try {
+                    const firebaseApp = initializeApp(firebaseConfig);
+                    this.auth = getAuth(firebaseApp);
+                    this.db = getFirestore(firebaseApp);
+                    console.log('✅ Firebase подключён');
+                } catch (error) {
+                    console.error('❌ Ошибка Firebase:', error);
+                    this.showAlert('Ошибка подключения к серверу', 'error');
+                    return;
+                }
 
-        function renderBookings() {
-            const tbody = document.getElementById('bookings-list');
-            const search = document.getElementById('booking-search').value.toLowerCase();
-            const statusFilter = document.getElementById('booking-status-filter').value;
-            
-            let filtered = allBookings.filter(b => {
-                const matchesSearch = b.studentName?.toLowerCase().includes(search) || 
-                                     b.teacherName?.toLowerCase().includes(search) ||
-                                     b.comment?.toLowerCase().includes(search);
-                const matchesStatus = statusFilter === 'all' || b.status === statusFilter;
-                return matchesSearch && matchesStatus;
-            });
-            
-            tbody.innerHTML = '';
-            if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Записи не найдены</td></tr>';
-                return;
-            }
-            
-            filtered.forEach(booking => {
-                const tr = document.createElement('tr');
-                const statusClass = `badge-${booking.status}`;
-                const statusText = booking.status === 'confirmed' ? 'Подтверждено' : 
-                                   booking.status === 'pending' ? 'Ожидает' : 'Отменено';
+                onAuthStateChanged(this.auth, async (user) => {
+                    await this.handleAuthChange(user);
+                });
+
+                console.log('✅ vocal-admin готов');
+            },
+
+            // Обработка авторизации
+            async handleAuthChange(user) {
+                console.log('🔄 Auth change:', user ? user.email : 'null');
                 
-                tr.innerHTML = `
-                    <td>${booking.studentName}<br><small style="color:#666">${booking.studentPhone}</small></td>
-                    <td>${booking.teacherName}</td>
-                    <td>${formatDate(booking.date)}</td>
-                    <td>${booking.time}</td>
-                    <td><span class="badge ${statusClass}">${statusText}</span></td>
-                    <td><small>${booking.comment || booking.adminComment || '—'}</small></td>
-                    <td class="action-btns">
-                        <button class="btn btn-sm btn-accent" onclick="editBooking('${booking.id}')"><i class="fas fa-edit"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+                if (this.initialized) return;
 
-        window.switchTab = function(tab) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            event.currentTarget.classList.add('active');
-            document.getElementById('tab-' + tab).classList.add('active');
-        };
+                if (!user) {
+                    console.log('❌ Нет пользователя → редирект');
+                    window.location.href = 'vocal-login.html';
+                    return;
+                }
 
-        window.filterUsers = function() { renderUsers(); };
-        window.filterBookings = function() { renderBookings(); };
+                try {
+                    const userDoc = await this.withTimeout(
+                        getDoc(doc(this.db, 'users', user.uid)),
+                        5000,
+                        'Таймаут загрузки профиля'
+                    );
 
-        // === USER MANAGEMENT ===
-        window.editUser = async function(userId) {
-            const user = allUsers.find(u => u.id === userId);
-            if (!user) return;
-            
-            document.getElementById('edit-user-id').value = userId;
-            document.getElementById('edit-user-name').value = user.name || '';
-            document.getElementById('edit-user-email').value = user.email || '';
-            document.getElementById('edit-user-phone').value = user.phone || '';
-            document.getElementById('edit-user-type').value = user.type || 'student';
-            document.getElementById('edit-user-status').value = user.status || 'active';
-            document.getElementById('edit-user-password').value = '';
-            
-            document.getElementById('modal-edit-user').classList.add('active');
-        };
+                    if (!userDoc.exists()) throw new Error('Профиль не найден');
+                    
+                    const data = userDoc.data();
+                    
+                    if (data.type !== 'admin') {
+                        console.log('❌ Не админ → редирект');
+                        this.showAlert('Доступ запрещён. Требуется роль администратора.', 'error');
+                        setTimeout(() => {
+                            window.location.href = data.type === 'teacher' ? 'vocal-teacher.html' : 'vocal-student.html';
+                        }, 2000);
+                        return;
+                    }
 
-        window.saveUserEdit = async function() {
-            const userId = document.getElementById('edit-user-id').value;
-            const newPassword = document.getElementById('edit-user-password').value;
-            
-            const updates = {
-                name: document.getElementById('edit-user-name').value,
-                email: document.getElementById('edit-user-email').value,
-                phone: document.getElementById('edit-user-phone').value,
-                type: document.getElementById('edit-user-type').value,
-                status: document.getElementById('edit-user-status').value,
-                updatedAt: new Date().toISOString()
-            };
-            
-            try {
-                await updateDoc(doc(db, 'users', userId), updates);
+                    this.user = { uid: user.uid, ...data };
+                    document.getElementById('admin-name').textContent = this.user.name;
+                    
+                    await this.loadData();
+                    this.initialized = true;
+                    console.log('✅ Админ-панель готова');
+
+                } catch (error) {
+                    console.error('❌ Ошибка:', error);
+                    this.showAlert('Ошибка: ' + error.message, 'error');
+                }
+            },
+
+            // Загрузка всех данных
+            async loadData() {
+                await Promise.all([
+                    this.loadUsers(),
+                    this.loadBookings(),
+                    this.loadStats(),
+                    this.loadSettings()
+                ]);
+            },
+
+            // Загрузка пользователей
+            async loadUsers() {
+                try {
+                    const snapshot = await this.withTimeout(
+                        getDocs(collection(this.db, 'users')),
+                        5000,
+                        'Таймаут'
+                    );
+                    this.allUsers = [];
+                    snapshot.forEach(doc => this.allUsers.push({ id: doc.id, ...doc.data() }));
+                    this.renderPending();
+                    this.renderStudents();
+                    this.renderTeachers();
+                } catch (error) {
+                    console.error('Ошибка загрузки пользователей:', error);
+                }
+            },
+
+            // Загрузка записей
+            async loadBookings() {
+                try {
+                    const q = query(collection(this.db, 'bookings'), orderBy('createdAt', 'desc'), limit(100));
+                    const snapshot = await this.withTimeout(
+                        getDocs(q),
+                        5000,
+                        'Таймаут'
+                    );
+                    this.allBookings = [];
+                    snapshot.forEach(doc => this.allBookings.push({ id: doc.id, ...doc.data() }));
+                    this.renderBookings();
+                } catch (error) {
+                    console.error('Ошибка загрузки записей:', error);
+                }
+            },
+
+            // Загрузка статистики
+            async loadStats() {
+                const pending = this.allUsers.filter(u => u.status === 'pending').length;
+                document.getElementById('stat-users').textContent = this.allUsers.length;
+                document.getElementById('stat-teachers').textContent = this.allUsers.filter(u => u.type === 'teacher').length;
+                document.getElementById('stat-bookings').textContent = this.allBookings.length;
+                document.getElementById('stat-pending').textContent = pending;
+            },
+
+            // Загрузка настроек
+            async loadSettings() {
+                try {
+                    const settingsDoc = await getDoc(doc(this.db, 'settings', 'vocal'));
+                    if (settingsDoc.exists()) {
+                        const s = settingsDoc.data();
+                        document.getElementById('setting-duration').value = s.duration || '60';
+                        document.getElementById('setting-max-per-day').value = s.maxPerDay || '1';
+                        document.getElementById('setting-auto-cancel').value = s.autoCancelHours || '24';
+                        document.getElementById('setting-email-notifications').value = s.emailNotifications !== false ? 'true' : 'false';
+                    }
+                } catch (error) {
+                    console.error('Ошибка загрузки настроек:', error);
+                }
+            },
+
+            // Переключение вкладок
+            switchTab(tab) {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                event.currentTarget.classList.add('active');
+                document.getElementById('tab-' + tab).classList.add('active');
+            },
+
+            // Рендер ожидающих пользователей
+            renderPending() {
+                const tbody = document.getElementById('pending-list');
+                const pending = this.allUsers.filter(u => u.status === 'pending');
                 
-                // Update password if provided
-                if (newPassword && newPassword.length >= 6) {
-                    // Note: Password change requires re-authentication in Firebase Auth
-                    // For now, we just store a flag that password should be changed
-                    await updateDoc(doc(db, 'users', userId), {
-                        passwordChangeRequired: true,
-                        passwordChangeRequestedAt: new Date().toISOString()
-                    });
+                if (pending.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty">Нет ожидающих пользователей ✓</td></tr>';
+                    return;
                 }
                 
-                // Also update teachers collection if user is teacher
-                if (updates.type === 'teacher') {
-                    await setDoc(doc(db, 'teachers', userId), {
-                        name: updates.name,
-                        email: updates.email,
-                        phone: updates.phone,
-                        status: updates.status
-                    }, { merge: true });
+                tbody.innerHTML = pending.map(u => `
+                    <tr>
+                        <td>${u.name || '—'}</td>
+                        <td>${u.email || '—'}</td>
+                        <td><span class="badge badge-${u.type === 'teacher' ? 'teacher' : 'student'}">${u.type === 'teacher' ? 'Преподаватель' : 'Студент'}</span></td>
+                        <td>${u.createdAt ? new Date(u.createdAt).toLocaleDateString('ru-RU') : '—'}</td>
+                        <td class="action-btns">
+                            <button class="btn btn-sm btn-success" onclick="app.approveUser('${u.id}', '${u.type}')"><i class="fas fa-check"></i> Подтвердить</button>
+                            <button class="btn btn-sm btn-danger" onclick="app.rejectUser('${u.id}')"><i class="fas fa-times"></i> Отклонить</button>
+                        </td>
+                    </tr>
+                `).join('');
+            },
+
+            // Рендер студентов
+            renderStudents() {
+                this._renderUserList('students', 'student');
+            },
+
+            // Рендер преподавателей
+            renderTeachers() {
+                this._renderUserList('teachers', 'teacher');
+            },
+
+            // Общая функция рендера пользователей
+            _renderUserList(listId, userType) {
+                const tbody = document.getElementById(listId + '-list');
+                const search = document.getElementById(listId + '-search')?.value.toLowerCase() || '';
+                const statusFilter = document.getElementById(listId + '-status-filter')?.value || 'all';
+                
+                let filtered = this.allUsers.filter(u => {
+                    if (u.type !== userType) return false;
+                    const matchesSearch = u.name?.toLowerCase().includes(search) || u.email?.toLowerCase().includes(search);
+                    const matchesStatus = statusFilter === 'all' || u.status === statusFilter;
+                    return matchesSearch && matchesStatus;
+                });
+                
+                if (filtered.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty">Пользователи не найдены</td></tr>';
+                    return;
                 }
                 
-                showAlert('Пользователь обновлён', 'success');
-                closeModal('edit-user');
-                await loadData();
-            } catch (error) {
-                showAlert('Ошибка: ' + error.message, 'error');
-            }
-        };
+                tbody.innerHTML = filtered.map(u => {
+                    const statusClass = `badge-${u.status === 'active' ? 'confirmed' : u.status === 'blocked' ? 'cancelled' : u.status === 'rejected' ? 'rejected' : 'pending'}`;
+                    const statusText = { active: 'Активен', blocked: 'Заблокирован', rejected: 'Отклонён', pending: 'Ожидает' }[u.status] || u.status;
+                    
+                    return `
+                        <tr>
+                            <td>${u.name || '—'}</td>
+                            <td>${u.email || '—'}</td>
+                            <td>${u.phone || '—'}</td>
+                            <td><span class="badge ${statusClass}">${statusText}</span></td>
+                            <td class="action-btns">
+                                ${u.status === 'active' ? 
+                                    `<button class="btn btn-sm btn-danger" onclick="app.blockUser('${u.id}')"><i class="fas fa-ban"></i> Заблокировать</button>` :
+                                    u.status !== 'rejected' ? 
+                                    `<button class="btn btn-sm btn-success" onclick="app.activateUser('${u.id}')"><i class="fas fa-check"></i> Активировать</button>` : ''
+                                }
+                                <button class="btn btn-sm btn-accent" onclick="app.editUser('${u.id}')"><i class="fas fa-edit"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            },
 
-        window.deleteUser = async function(userId) {
-            if (!confirm('Вы уверены? Это удалит пользователя и все его записи!')) return;
-            
-            try {
-                // Delete user bookings first
-                const bookingsRef = collection(db, 'bookings');
-                const q = query(bookingsRef, where('studentId', '==', userId));
-                const snapshot = await getDocs(q);
-                
-                const batch = [];
-                snapshot.forEach(doc => batch.push(deleteDoc(doc.ref)));
-                await Promise.all(batch);
-                
-                // Delete user
-                await deleteDoc(doc(db, 'users', userId));
-                
-                // Delete from teachers if exists
-                await deleteDoc(doc(db, 'teachers', userId)).catch(() => {});
-                
-                showAlert('Пользователь удалён', 'success');
-                await loadData();
-            } catch (error) {
-                showAlert('Ошибка: ' + error.message, 'error');
-            }
-        };
+            // Фильтрация
+            filterStudents() { this.renderStudents(); },
+            filterTeachers() { this.renderTeachers(); },
+            filterBookings() { this.renderBookings(); },
 
-        // === BOOKING MANAGEMENT ===
-        window.editBooking = async function(bookingId) {
-            const booking = allBookings.find(b => b.id === bookingId);
-            if (!booking) return;
-            
-            document.getElementById('edit-booking-id').value = bookingId;
-            document.getElementById('edit-booking-status').value = booking.status || 'pending';
-            document.getElementById('edit-booking-admin-comment').value = booking.adminComment || '';
-            
-            document.getElementById('modal-edit-booking').classList.add('active');
-        };
+            // Рендер записей
+            renderBookings() {
+                const tbody = document.getElementById('bookings-list');
+                const search = document.getElementById('booking-search')?.value.toLowerCase() || '';
+                const statusFilter = document.getElementById('booking-status-filter')?.value || 'all';
+                
+                let filtered = this.allBookings.filter(b => {
+                    const matchesSearch = b.studentName?.toLowerCase().includes(search) || 
+                                         b.teacherName?.toLowerCase().includes(search) ||
+                                         b.comment?.toLowerCase().includes(search);
+                    const matchesStatus = statusFilter === 'all' || b.status === statusFilter;
+                    return matchesSearch && matchesStatus;
+                });
+                
+                if (filtered.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="empty">Записи не найдены</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = filtered.map(b => {
+                    const statusClass = `badge-${b.status === 'confirmed' ? 'confirmed' : b.status === 'pending' ? 'pending' : 'cancelled'}`;
+                    const statusText = { confirmed: 'Подтверждено', pending: 'Ожидает', cancelled: 'Отменено' }[b.status] || b.status;
+                    
+                    return `
+                        <tr>
+                            <td>${b.studentName || '—'}<br><small style="color:#666">${b.studentPhone || ''}</small></td>
+                            <td>${b.teacherName || '—'}</td>
+                            <td>${this.formatDate(b.date)}</td>
+                            <td>${b.time || '—'}</td>
+                            <td><span class="badge ${statusClass}">${statusText}</span></td>
+                            <td><small>${b.comment || b.adminComment || '—'}</small></td>
+                            <td class="action-btns">
+                                <button class="btn btn-sm btn-accent" onclick="app.editBooking('${b.id}')"><i class="fas fa-edit"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            },
 
-        window.saveBookingEdit = async function() {
-            const bookingId = document.getElementById('edit-booking-id').value;
-            const newStatus = document.getElementById('edit-booking-status').value;
-            const adminComment = document.getElementById('edit-booking-admin-comment').value;
+            // === УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ ===
             
-            try {
+            editUser(userId) {
+                const user = this.allUsers.find(u => u.id === userId);
+                if (!user) return;
+                
+                document.getElementById('edit-user-id').value = userId;
+                document.getElementById('edit-user-name').value = user.name || '';
+                document.getElementById('edit-user-email').value = user.email || '';
+                document.getElementById('edit-user-phone').value = user.phone || '';
+                document.getElementById('edit-user-type').value = user.type || 'student';
+                document.getElementById('edit-user-status').value = user.status || 'active';
+                document.getElementById('edit-user-password').value = '';
+                
+                document.getElementById('modal-edit-user').classList.add('active');
+            },
+
+            async saveUserEdit() {
+                const userId = document.getElementById('edit-user-id').value;
+                const newPassword = document.getElementById('edit-user-password').value;
+                
                 const updates = {
-                    status: newStatus,
-                    adminComment,
+                    name: document.getElementById('edit-user-name').value,
+                    email: document.getElementById('edit-user-email').value,
+                    phone: document.getElementById('edit-user-phone').value,
+                    type: document.getElementById('edit-user-type').value,
+                    status: document.getElementById('edit-user-status').value,
                     updatedAt: new Date().toISOString()
                 };
                 
-                if (newStatus === 'confirmed' && !updates.confirmedAt) {
-                    updates.confirmedAt = new Date().toISOString();
-                }
-                
-                await updateDoc(doc(db, 'bookings', bookingId), updates);
-                
-                showAlert('Запись обновлена', 'success');
-                closeModal('edit-booking');
-                await loadBookings();
-                await loadStats();
-            } catch (error) {
-                showAlert('Ошибка: ' + error.message, 'error');
-            }
-        };
-
-        window.deleteBooking = async function() {
-            const bookingId = document.getElementById('edit-booking-id').value;
-            if (!confirm('Удалить эту запись?')) return;
-            
-            try {
-                await deleteDoc(doc(db, 'bookings', bookingId));
-                showAlert('Запись удалена', 'success');
-                closeModal('edit-booking');
-                await loadBookings();
-                await loadStats();
-            } catch (error) {
-                showAlert('Ошибка: ' + error.message, 'error');
-            }
-        };
-
-        // === SETTINGS ===
-        window.saveSettings = async function() {
-            try {
-                await setDoc(doc(db, 'settings', 'vocal'), {
-                    duration: parseInt(document.getElementById('setting-duration').value),
-                    maxPerDay: parseInt(document.getElementById('setting-max-per-day').value),
-                    autoCancelHours: parseInt(document.getElementById('setting-auto-cancel').value),
-                    emailNotifications: document.getElementById('setting-email-notifications').value === 'true',
-                    updatedAt: new Date().toISOString()
-                });
-                showAlert('Настройки сохранены', 'success');
-            } catch (error) {
-                showAlert('Ошибка: ' + error.message, 'error');
-            }
-        };
-
-        window.exportData = async function() {
-            const data = {
-                users: allUsers,
-                bookings: allBookings,
-                exportedAt: new Date().toISOString()
-            };
-            
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `vocal-export-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showAlert('Данные экспортированы', 'success');
-        };
-
-        window.clearOldBookings = async function() {
-            if (!confirm('Удалить все записи старше 30 дней? Это действие нельзя отменить!')) return;
-            
-            try {
-                const thirtyDaysAgo = new Date();
-                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                
-                const bookingsRef = collection(db, 'bookings');
-                const snapshot = await getDocs(bookingsRef);
-                
-                let deleted = 0;
-                for (const docSnap of snapshot.docs) {
-                    const booking = docSnap.data();
-                    const bookingDate = new Date(booking.date);
-                    if (bookingDate < thirtyDaysAgo) {
-                        await deleteDoc(docSnap.ref);
-                        deleted++;
+                try {
+                    await this.withTimeout(
+                        updateDoc(doc(this.db, 'users', userId), updates),
+                        5000,
+                        'Таймаут'
+                    );
+                    
+                    // Обновляем teachers/students если нужно
+                    if (updates.type === 'teacher') {
+                        await setDoc(doc(this.db, 'teachers', userId), {
+                            name: updates.name,
+                            email: updates.email,
+                            phone: updates.phone,
+                            status: updates.status
+                        }, { merge: true });
                     }
+                    
+                    this.showAlert('Пользователь обновлён', 'success');
+                    this.closeModal('edit-user');
+                    await this.loadData();
+                } catch (error) {
+                    this.showAlert('Ошибка: ' + error.message, 'error');
                 }
+            },
+
+            async deleteUser(userId) {
+                if (!confirm('Вы уверены? Это удалит пользователя и все его записи!')) return;
                 
-                showAlert(`Удалено записей: ${deleted}`, 'success');
-                await loadBookings();
-                await loadStats();
-            } catch (error) {
-                showAlert('Ошибка: ' + error.message, 'error');
-            }
-        };
+                try {
+                    // Удаляем записи
+                    const q = query(collection(this.db, 'bookings'), where('studentId', '==', userId));
+                    const snapshot = await getDocs(q);
+                    const deletes = snapshot.docs.map(d => deleteDoc(d.ref));
+                    await Promise.all(deletes);
+                    
+                    // Удаляем пользователя
+                    await deleteDoc(doc(this.db, 'users', userId));
+                    await deleteDoc(doc(this.db, 'teachers', userId)).catch(() => {});
+                    
+                    this.showAlert('Пользователь удалён', 'success');
+                    await this.loadData();
+                } catch (error) {
+                    this.showAlert('Ошибка: ' + error.message, 'error');
+                }
+            },
 
-        // === UTILS ===
-        window.closeModal = function(modalId) {
-            document.getElementById('modal-' + modalId).classList.remove('active');
-        };
+            // === МОДЕРАЦИЯ ===
+            
+            async approveUser(userId, userType) {
+                if (!confirm('Подтвердить этого пользователя?')) return;
+                
+                try {
+                    await updateDoc(doc(this.db, 'users', userId), {
+                        status: 'active',
+                        approvedAt: new Date().toISOString()
+                    });
+                    
+                    if (userType === 'teacher') {
+                        await updateDoc(doc(this.db, 'teachers', userId), {
+                            status: 'active',
+                            approvedAt: new Date().toISOString()
+                        });
+                    }
+                    
+                    this.showAlert('Пользователь подтверждён!', 'success');
+                    await this.loadData();
+                } catch (error) {
+                    this.showAlert('Ошибка: ' + error.message, 'error');
+                }
+            },
 
-        function formatDate(dateStr) {
-            if (!dateStr) return '—';
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
-        }
+            async rejectUser(userId) {
+                const reason = prompt('Причина отклонения (необязательно):') || 'Не указано';
+                if (!confirm(`Отклонить заявку?\nПричина: ${reason}`)) return;
+                
+                try {
+                    await updateDoc(doc(this.db, 'users', userId), {
+                        status: 'rejected',
+                        rejectedAt: new Date().toISOString(),
+                        rejectionReason: reason
+                    });
+                    
+                    this.showAlert('Заявка отклонена', 'success');
+                    await this.loadData();
+                } catch (error) {
+                    this.showAlert('Ошибка: ' + error.message, 'error');
+                }
+            },
 
-        function showAlert(message, type) {
-            const errorAlert = document.getElementById('alert-error');
-            const successAlert = document.getElementById('alert-success');
+            async blockUser(userId) {
+                if (!confirm('Заблокировать пользователя?')) return;
+                try {
+                    await updateDoc(doc(this.db, 'users', userId), { status: 'blocked' });
+                    this.showAlert('Пользователь заблокирован', 'success');
+                    await this.loadData();
+                } catch (error) {
+                    this.showAlert('Ошибка: ' + error.message, 'error');
+                }
+            },
+
+            async activateUser(userId) {
+                if (!confirm('Активировать пользователя?')) return;
+                try {
+                    await updateDoc(doc(this.db, 'users', userId), { status: 'active' });
+                    this.showAlert('Пользователь активирован', 'success');
+                    await this.loadData();
+                } catch (error) {
+                    this.showAlert('Ошибка: ' + error.message, 'error');
+                }
+            },
+
+            // === УПРАВЛЕНИЕ ЗАПИСЯМИ ===
             
-            errorAlert.style.display = 'none';
-            successAlert.style.display = 'none';
+            editBooking(bookingId) {
+                const booking = this.allBookings.find(b => b.id === bookingId);
+                if (!booking) return;
+                
+                document.getElementById('edit-booking-id').value = bookingId;
+                document.getElementById('edit-booking-status').value = booking.status || 'pending';
+                document.getElementById('edit-booking-admin-comment').value = booking.adminComment || '';
+                
+                document.getElementById('modal-edit-booking').classList.add('active');
+            },
+
+            async saveBookingEdit() {
+                const bookingId = document.getElementById('edit-booking-id').value;
+                const newStatus = document.getElementById('edit-booking-status').value;
+                const adminComment = document.getElementById('edit-booking-admin-comment').value;
+                
+                try {
+                    const updates = {
+                        status: newStatus,
+                        adminComment,
+                        updatedAt: new Date().toISOString()
+                    };
+                    if (newStatus === 'confirmed' && !updates.confirmedAt) {
+                        updates.confirmedAt = new Date().toISOString();
+                    }
+                    
+                    await this.withTimeout(
+                        updateDoc(doc(this.db, 'bookings', bookingId), updates),
+                        5000,
+                        'Таймаут'
+                    );
+                    
+                    this.showAlert('Запись обновлена', 'success');
+                    this.closeModal('edit-booking');
+                    await this.loadBookings();
+                    await this.loadStats();
+                } catch (error) {
+                    this.showAlert('Ошибка: ' + error.message, 'error');
+                }
+            },
+
+            async deleteBooking() {
+                const bookingId = document.getElementById('edit-booking-id').value;
+                if (!confirm('Удалить эту запись?')) return;
+                
+                try {
+                    await deleteDoc(doc(this.db, 'bookings', bookingId));
+                    this.showAlert('Запись удалена', 'success');
+                    this.closeModal('edit-booking');
+                    await this.loadBookings();
+                    await this.loadStats();
+                } catch (error) {
+                    this.showAlert('Ошибка: ' + error.message, 'error');
+                }
+            },
+
+            // === НАСТРОЙКИ ===
             
-            if (type === 'error') {
-                errorAlert.textContent = message;
-                errorAlert.style.display = 'block';
-            } else {
-                successAlert.textContent = message;
-                successAlert.style.display = 'block';
-            }
+            async saveSettings() {
+                try {
+                    await this.withTimeout(
+                        setDoc(doc(this.db, 'settings', 'vocal'), {
+                            duration: parseInt(document.getElementById('setting-duration').value),
+                            maxPerDay: parseInt(document.getElementById('setting-max-per-day').value),
+                            autoCancelHours: parseInt(document.getElementById('setting-auto-cancel').value),
+                            emailNotifications: document.getElementById('setting-email-notifications').value === 'true',
+                            updatedAt: new Date().toISOString()
+                        }),
+                        5000,
+                        'Таймаут'
+                    );
+                    this.showAlert('Настройки сохранены', 'success');
+                } catch (error) {
+                    this.showAlert('Ошибка: ' + error.message, 'error');
+                }
+            },
+
+            exportData() {
+                const data = {
+                    users: this.allUsers,
+                    bookings: this.allBookings,
+                    exportedAt: new Date().toISOString()
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `vocal-export-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                this.showAlert('Данные экспортированы', 'success');
+            },
+
+            async clearOldBookings() {
+                if (!confirm('Удалить все записи старше 30 дней? Это действие нельзя отменить!')) return;
+                
+                try {
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                    
+                    const snapshot = await getDocs(collection(this.db, 'bookings'));
+                    let deleted = 0;
+                    
+                    for (const docSnap of snapshot.docs) {
+                        const booking = docSnap.data();
+                        if (booking.date && new Date(booking.date) < thirtyDaysAgo) {
+                            await deleteDoc(docSnap.ref);
+                            deleted++;
+                        }
+                    }
+                    
+                    this.showAlert(`Удалено записей: ${deleted}`, 'success');
+                    await this.loadBookings();
+                    await this.loadStats();
+                } catch (error) {
+                    this.showAlert('Ошибка: ' + error.message, 'error');
+                }
+            },
+
+            // === УТИЛИТЫ ===
             
-            setTimeout(() => {
+            closeModal(modalId) {
+                document.getElementById('modal-' + modalId).classList.remove('active');
+            },
+
+            async logout() {
+                try {
+                    await signOut(this.auth);
+                    localStorage.removeItem('user');
+                    window.location.href = 'vocal-login.html';
+                } catch (error) {
+                    this.showAlert('Ошибка выхода: ' + error.message, 'error');
+                }
+            },
+
+            withTimeout(promise, ms, errorMessage) {
+                return Promise.race([
+                    promise,
+                    new Promise((_, reject) => setTimeout(() => reject(new Error(errorMessage)), ms))
+                ]);
+            },
+
+            formatDate(dateStr) {
+                if (!dateStr) return '—';
+                return new Date(dateStr).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+            },
+
+            showAlert(message, type) {
+                const errorAlert = document.getElementById('alert-error');
+                const successAlert = document.getElementById('alert-success');
                 errorAlert.style.display = 'none';
                 successAlert.style.display = 'none';
-            }, 5000);
-        }
+                
+                if (type === 'error') {
+                    errorAlert.textContent = message;
+                    errorAlert.style.display = 'block';
+                } else {
+                    successAlert.textContent = message;
+                    successAlert.style.display = 'block';
+                }
+                
+                setTimeout(() => {
+                    errorAlert.style.display = 'none';
+                    successAlert.style.display = 'none';
+                }, 5000);
+            }
+        };
 
-        // Make functions available globally
-        window.switchTab = switchTab;
-        window.filterUsers = filterUsers;
-        window.filterBookings = filterBookings;
-        window.editUser = editUser;
-        window.saveUserEdit = saveUserEdit;
-        window.deleteUser = deleteUser;
-        window.editBooking = editBooking;
-        window.saveBookingEdit = saveBookingEdit;
-        window.deleteBooking = deleteBooking;
-        window.saveSettings = saveSettings;
-        window.exportData = exportData;
-        window.clearOldBookings = clearOldBookings;
-        window.closeModal = closeModal;
-        window.logout = logout;
+        // === ЗАПУСК ===
+        app.init();
+        window.app = app;
     </script>
 </body>
 </html>
