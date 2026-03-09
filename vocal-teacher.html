@@ -20,8 +20,9 @@
             flex-wrap: wrap;
             gap: 1rem;
         }
-        .header h1 { font-size: 1.5rem; }
+        .header h1 { font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
         .user-info { display: flex; align-items: center; gap: 1rem; }
+        
         .btn {
             padding: 0.8rem 2rem;
             border: none;
@@ -49,7 +50,7 @@
             margin-bottom: 2rem;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .card h2 { color: #1a2c42; margin-bottom: 1.5rem; }
+        .card h2 { color: #1a2c42; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
         
         .form-group { margin-bottom: 1.5rem; }
         .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #1a2c42; }
@@ -116,11 +117,15 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            position: relative;
         }
         .time-slot:hover { background: #c5a059; color: white; }
         .time-slot.active { background: #c5a059; color: white; }
         .time-slot .remove-slot {
-            background: rgba(196, 30, 58, 0.8);
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #c41e3a;
             color: white;
             border: none;
             border-radius: 50%;
@@ -131,9 +136,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: 0.3s;
+            transition: 0.2s;
+            padding: 0;
+            line-height: 1;
         }
-        .time-slot .remove-slot:hover { background: #c41e3a; }
+        .time-slot .remove-slot:hover { background: #a01830; transform: scale(1.1); }
         
         .add-slot-btn {
             background: #f4f1ea;
@@ -147,6 +154,7 @@
             transition: 0.3s;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
         }
         .add-slot-btn:hover { background: #c5a059; color: white; }
@@ -201,7 +209,7 @@
             justify-content: center;
             z-index: 2000;
         }
-        .modal.active { display: flex; }
+        .modal.active { display: flex !important; }
         .modal-content {
             background: white;
             border-radius: 8px;
@@ -215,7 +223,50 @@
             align-items: center;
             margin-bottom: 1.5rem;
         }
-        .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+        .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; }
+        .modal-close:hover { color: #c41e3a; }
+        
+        .loading { text-align: center; padding: 2rem; color: #666; }
+        .empty { text-align: center; padding: 2rem; color: #999; }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Status screens */
+        .status-screen {
+            display: none;
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+        .status-screen.active { display: block; }
+        .status-screen.pending i { color: #c5a059; }
+        .status-screen.rejected i { color: #c41e3a; }
+        .status-screen i { font-size: 4rem; margin-bottom: 1rem; }
+        .status-screen h2 { color: #1a2c42; margin-bottom: 1rem; }
+        .status-screen p { color: #666; margin-bottom: 1.5rem; }
+        .status-screen .info-box {
+            background: #fff3cd;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            color: #856404;
+        }
+        .status-screen .reason-box {
+            background: #f8d7da;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            color: #721c24;
+            text-align: left;
+        }
         
         @media (max-width: 768px) {
             .header { flex-direction: column; text-align: center; }
@@ -230,83 +281,116 @@
     <header class="header">
         <h1><i class="fas fa-chalkboard-teacher"></i> Кабинет преподавателя</h1>
         <div class="user-info">
-            <span id="user-name">Загрузка...</span>
-            <button class="btn btn-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Выход</button>
+            <span id="user-name"></span>
+            <button class="btn btn-danger" onclick="app.logout()">
+                <i class="fas fa-sign-out-alt"></i> Выход
+            </button>
         </div>
     </header>
 
     <main class="main">
-        <div class="alert alert-error" id="alert-error"></div>
-        <div class="alert alert-success" id="alert-success"></div>
-
-        <!-- Availability -->
-        <div class="card">
-            <div class="months-nav">
-                <div>
-                    <h2><i class="fas fa-calendar-alt"></i> Моя доступность</h2>
-                    <p style="color: #666; margin-top: 0.5rem;">
-                        <i class="fas fa-info-circle"></i> 
-                        Выберите дни и время для занятий. Можно настроить до 2 месяцев вперёд.
-                    </p>
-                </div>
-                <div class="btn-group">
-                    <button class="btn btn-outline" onclick="copyFromPreviousWeek()">
-                        <i class="fas fa-copy"></i> Копировать с прошлой недели
-                    </button>
-                    <button class="btn btn-danger" onclick="clearAllSlots()">
-                        <i class="fas fa-trash"></i> Очистить всё
-                    </button>
-                </div>
+        <!-- Status Screens -->
+        <div class="card status-screen pending" id="pending-screen">
+            <i class="fas fa-hourglass-half"></i>
+            <h2>Ожидание подтверждения</h2>
+            <p>Ваш аккаунт преподавателя ожидает подтверждения администратором.</p>
+            <div class="info-box">
+                <i class="fas fa-clock"></i> Обычно подтверждение занимает до 24 часов
             </div>
-            
-            <div class="form-group">
-                <label><i class="fas fa-calendar"></i> Период отображения</label>
-                <select id="period-select" onchange="changePeriod()">
-                    <option value="30">Следующие 30 дней</option>
-                    <option value="60" selected>Следующие 60 дней (2 месяца)</option>
-                    <option value="90">Следующие 90 дней (3 месяца)</option>
-                </select>
-            </div>
-            
-            <div class="quick-actions">
-                <button class="btn btn-sm btn-accent" onclick="addTimeSlotToAll('10:00')">
-                    <i class="fas fa-plus"></i> Добавить 10:00 ко всем дням
-                </button>
-                <button class="btn btn-sm btn-accent" onclick="addTimeSlotToAll('14:00')">
-                    <i class="fas fa-plus"></i> Добавить 14:00 ко всем дням
-                </button>
-                <button class="btn btn-sm btn-accent" onclick="addTimeSlotToAll('18:00')">
-                    <i class="fas fa-plus"></i> Добавить 18:00 ко всем дням
-                </button>
-            </div>
-            
-            <div class="days-grid" id="days-grid">
-                <!-- Days will be rendered here -->
-            </div>
-            
-            <button class="btn btn-accent" onclick="saveAvailability()" style="margin-top: 1.5rem; width: 100%;">
-                <i class="fas fa-save"></i> Сохранить доступность
+            <p style="color: #999; font-size: 0.9rem;">Вы получите уведомление на email после подтверждения.</p>
+            <button class="btn btn-primary" onclick="window.location.href='index.html'">
+                <i class="fas fa-home"></i> На сайт церкви
             </button>
         </div>
 
-        <!-- Bookings -->
-        <div class="card">
-            <h2><i class="fas fa-users"></i> Записи на занятия</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Студент</th>
-                        <th>Телефон</th>
-                        <th>Дата</th>
-                        <th>Время</th>
-                        <th>Статус</th>
-                        <th>Действия</th>
-                    </tr>
-                </thead>
-                <tbody id="bookings-list">
-                    <tr><td colspan="6" style="text-align: center;">Загрузка...</td></tr>
-                </tbody>
-            </table>
+        <div class="card status-screen rejected" id="rejected-screen">
+            <i class="fas fa-times-circle"></i>
+            <h2>Заявка отклонена</h2>
+            <p>К сожалению, ваша заявка на роль преподавателя была отклонена.</p>
+            <div class="reason-box">
+                <strong>Причина:</strong>
+                <p id="rejection-reason" style="margin: 0.5rem 0 0;"></p>
+            </div>
+            <p style="color: #999; font-size: 0.9rem;">Если вы считаете, что это ошибка, свяжитесь с администратором.</p>
+            <button class="btn btn-primary" onclick="window.location.href='index.html'">
+                <i class="fas fa-home"></i> На сайт церкви
+            </button>
+        </div>
+
+        <!-- Main Content (shown when active) -->
+        <div id="main-content" style="display: none;">
+            <div class="alert alert-error" id="alert-error"></div>
+            <div class="alert alert-success" id="alert-success"></div>
+
+            <!-- Availability -->
+            <div class="card">
+                <div class="months-nav">
+                    <div>
+                        <h2><i class="fas fa-calendar-alt"></i> Моя доступность</h2>
+                        <p style="color: #666; margin-top: 0.5rem;">
+                            <i class="fas fa-info-circle"></i> 
+                            Выберите дни и время для занятий. Можно настроить до 2 месяцев вперёд.
+                        </p>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-outline btn-sm" onclick="app.copyFromPreviousWeek()">
+                            <i class="fas fa-copy"></i> Копировать с прошлой недели
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="app.clearAllSlots()">
+                            <i class="fas fa-trash"></i> Очистить всё
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-calendar"></i> Период отображения</label>
+                    <select id="period-select" onchange="app.changePeriod()">
+                        <option value="30">Следующие 30 дней</option>
+                        <option value="60" selected>Следующие 60 дней (2 месяца)</option>
+                        <option value="90">Следующие 90 дней (3 месяца)</option>
+                    </select>
+                </div>
+                
+                <div class="quick-actions">
+                    <button class="btn btn-sm btn-accent" onclick="app.addTimeSlotToAll('10:00')">
+                        <i class="fas fa-plus"></i> 10:00 всем дням
+                    </button>
+                    <button class="btn btn-sm btn-accent" onclick="app.addTimeSlotToAll('14:00')">
+                        <i class="fas fa-plus"></i> 14:00 всем дням
+                    </button>
+                    <button class="btn btn-sm btn-accent" onclick="app.addTimeSlotToAll('18:00')">
+                        <i class="fas fa-plus"></i> 18:00 всем дням
+                    </button>
+                </div>
+                
+                <div class="days-grid" id="days-grid">
+                    <div class="loading">Загрузка календаря...</div>
+                </div>
+                
+                <button class="btn btn-accent" onclick="app.saveAvailability()" style="margin-top: 1.5rem; width: 100%;" id="save-availability-btn">
+                    <i class="fas fa-save"></i> Сохранить доступность
+                </button>
+            </div>
+
+            <!-- Bookings -->
+            <div class="card">
+                <h2><i class="fas fa-users"></i> Записи на занятия</h2>
+                <div id="bookings-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Студент</th>
+                                <th>Телефон</th>
+                                <th>Дата</th>
+                                <th>Время</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookings-list"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -315,7 +399,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Добавить время</h3>
-                <button class="modal-close" onclick="closeModal('add-slot')">&times;</button>
+                <button class="modal-close" onclick="app.closeModal('add-slot')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -324,17 +408,19 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeModal('add-slot')">Отмена</button>
-                <button class="btn btn-accent" onclick="confirmAddSlot()">Добавить</button>
+                <button class="btn btn-outline" onclick="app.closeModal('add-slot')">Отмена</button>
+                <button class="btn btn-accent" onclick="app.confirmAddSlot()">Добавить</button>
             </div>
         </div>
     </div>
 
     <script type="module">
+        // === FIREBASE IMPORTS (clean URLs) ===
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, where, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
+        // === FIREBASE CONFIG ===
         const firebaseConfig = {
             apiKey: "AIzaSyC0YQBEy7yAQ14Ion-Vx3w99KNtG9kSHQw",
             authDomain: "stmariaulsk-vocaldb.firebaseapp.com",
@@ -344,395 +430,546 @@
             appId: "1:1014321374210:web:f228e994505553c741b31b"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // === APP OBJECT ===
+        const app = {
+            auth: null,
+            db: null,
+            user: null,
+            availability: {},
+            currentPeriod: 60,
+            pendingSlotDate: null,
+            initialized: false,
 
-        let currentUser = null;
-        let availability = {};
-        let currentPeriod = 60; // дней
-        let pendingSlotDate = null;
-
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = 'vocal-login.html';
-                return;
-            }
-            
-            currentUser = JSON.parse(localStorage.getItem('user'));
-            if (!currentUser || currentUser.type !== 'teacher') {
-                window.location.href = 'vocal-login.html';
-                return;
-            }
-            
-            document.getElementById('user-name').textContent = currentUser.name;
-            await loadAvailability();
-            await loadBookings();
-            renderDays();
-        });
-
-        window.logout = async function() {
-            await signOut(auth);
-            localStorage.removeItem('user');
-            window.location.href = 'vocal-login.html';
-        };
-
-        async function loadAvailability() {
-            const teacherDoc = await getDoc(doc(db, 'teachers', currentUser.uid));
-            if (teacherDoc.exists()) {
-                availability = teacherDoc.data().availability || {};
-            }
-        }
-
-        window.changePeriod = function() {
-            currentPeriod = parseInt(document.getElementById('period-select').value);
-            renderDays();
-        };
-
-        function renderDays() {
-            const grid = document.getElementById('days-grid');
-            grid.innerHTML = '';
-            
-            const today = new Date();
-            const endDate = new Date(today);
-            endDate.setDate(endDate.getDate() + currentPeriod);
-            
-            let currentDate = new Date(today);
-            
-            while (currentDate <= endDate) {
-                const dateStr = currentDate.toISOString().split('T')[0];
-                const slots = availability[dateStr] || [];
-                const dayName = currentDate.toLocaleDateString('ru-RU', { weekday: 'long' });
-                const dayDate = currentDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+            // Инициализация
+            async init() {
+                console.log('🚀 Инициализация vocal-teacher...');
                 
-                const card = document.createElement('div');
-                card.className = `day-card ${slots.length > 0 ? 'has-slots' : ''}`;
-                card.innerHTML = `
-                    <div class="day-header">
-                        <div>
-                            <h3>${capitalizeFirst(dayName)}</h3>
-                            <div class="date">${dayDate}</div>
-                        </div>
-                        ${slots.length > 0 ? `<div class="slot-count">${slots.length} слотов</div>` : ''}
-                    </div>
-                    <div class="time-slots" id="slots-${dateStr}">
-                        ${slots.map(time => `
-                            <div class="time-slot active">
-                                ${time}
-                                <button class="remove-slot" onclick="removeSlot('${dateStr}', '${time}', event)" title="Удалить слот">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                try {
+                    const firebaseApp = initializeApp(firebaseConfig);
+                    this.auth = getAuth(firebaseApp);
+                    this.db = getFirestore(firebaseApp);
+                    console.log('✅ Firebase подключён');
+                } catch (error) {
+                    console.error('❌ Ошибка Firebase:', error);
+                    this.showAlert('Ошибка подключения к серверу', 'error');
+                    return;
+                }
+
+                onAuthStateChanged(this.auth, async (user) => {
+                    await this.handleAuthChange(user);
+                });
+
+                console.log('✅ vocal-teacher готов');
+            },
+
+            // Обработка авторизации
+            async handleAuthChange(user) {
+                console.log('🔄 Auth change:', user ? user.email : 'null');
+                
+                if (this.initialized) return;
+
+                if (!user) {
+                    console.log('❌ Нет пользователя → редирект');
+                    window.location.href = 'vocal-login.html';
+                    return;
+                }
+
+                try {
+                    const userDoc = await this.withTimeout(
+                        getDoc(doc(this.db, 'users', user.uid)),
+                        5000,
+                        'Таймаут загрузки профиля'
+                    );
+
+                    if (!userDoc.exists()) throw new Error('Профиль не найден');
+                    
+                    const data = userDoc.data();
+                    console.log('📄 Данные:', data);
+
+                    // Проверка типа пользователя
+                    if (data.type !== 'teacher') {
+                        console.log('❌ Не преподаватель (тип: ' + data.type + ') → редирект');
+                        if (data.type === 'admin') {
+                            window.location.href = 'vocal-admin.html';
+                        } else if (data.type === 'student') {
+                            window.location.href = 'vocal-student.html';
+                        } else {
+                            window.location.href = 'vocal-login.html';
+                        }
+                        return;
+                    }
+
+                    // Проверка статуса
+                    if (data.status === 'pending') {
+                        this.showPendingScreen();
+                        this.initialized = true;
+                        return;
+                    }
+
+                    if (data.status === 'rejected') {
+                        this.showRejectedScreen(data.rejectionReason || 'Не указано');
+                        this.initialized = true;
+                        return;
+                    }
+
+                    if (data.status === 'blocked') {
+                        this.showAlert('Ваш аккаунт заблокирован', 'error');
+                        await this.logout();
+                        return;
+                    }
+
+                    // Активный преподаватель — показываем интерфейс
+                    this.user = {
+                        uid: user.uid,
+                        email: user.email,
+                        name: data.name,
+                        phone: data.phone,
+                        type: data.type
+                    };
+                    localStorage.setItem('user', JSON.stringify(this.user));
+
+                    document.getElementById('user-name').textContent = this.user.name;
+                    document.getElementById('main-content').style.display = 'block';
+                    
+                    await Promise.all([
+                        this.loadAvailability(),
+                        this.loadBookings()
+                    ]);
+                    
+                    this.renderDays();
+                    this.initialized = true;
+                    console.log('✅ Инициализация завершена');
+
+                } catch (error) {
+                    console.error('❌ Ошибка:', error);
+                    this.showAlert('Ошибка: ' + error.message, 'error');
+                }
+            },
+
+            // Показать экран ожидания
+            showPendingScreen() {
+                document.getElementById('main-content').style.display = 'none';
+                document.getElementById('pending-screen').classList.add('active');
+                document.getElementById('rejected-screen').classList.remove('active');
+            },
+
+            // Показать экран отклонения
+            showRejectedScreen(reason) {
+                document.getElementById('main-content').style.display = 'none';
+                document.getElementById('pending-screen').classList.remove('active');
+                document.getElementById('rejected-screen').classList.add('active');
+                document.getElementById('rejection-reason').textContent = reason;
+            },
+
+            // Выход
+            async logout() {
+                try {
+                    await signOut(this.auth);
+                    localStorage.removeItem('user');
+                    window.location.href = 'vocal-login.html';
+                } catch (error) {
+                    this.showAlert('Ошибка выхода: ' + error.message, 'error');
+                }
+            },
+
+            // Загрузка доступности
+            async loadAvailability() {
+                try {
+                    const teacherDoc = await this.withTimeout(
+                        getDoc(doc(this.db, 'teachers', this.user.uid)),
+                        5000,
+                        'Таймаут'
+                    );
+                    if (teacherDoc.exists()) {
+                        this.availability = teacherDoc.data().availability || {};
+                    }
+                } catch (error) {
+                    console.error('Ошибка загрузки доступности:', error);
+                    this.availability = {};
+                }
+            },
+
+            // Изменение периода
+            changePeriod() {
+                this.currentPeriod = parseInt(document.getElementById('period-select').value);
+                this.renderDays();
+            },
+
+            // Рендер дней
+            renderDays() {
+                const grid = document.getElementById('days-grid');
+                grid.innerHTML = '';
+                
+                const today = new Date();
+                const endDate = new Date(today);
+                endDate.setDate(endDate.getDate() + this.currentPeriod);
+                
+                let currentDate = new Date(today);
+                
+                while (currentDate <= endDate) {
+                    const dateStr = currentDate.toISOString().split('T')[0];
+                    const slots = this.availability[dateStr] || [];
+                    const dayName = currentDate.toLocaleDateString('ru-RU', { weekday: 'long' });
+                    const dayDate = currentDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+                    
+                    const card = document.createElement('div');
+                    card.className = `day-card ${slots.length > 0 ? 'has-slots' : ''}`;
+                    card.innerHTML = `
+                        <div class="day-header">
+                            <div>
+                                <h3>${this.capitalizeFirst(dayName)}</h3>
+                                <div class="date">${dayDate}</div>
                             </div>
-                        `).join('')}
-                        <div class="add-slot-btn" onclick="openAddSlotModal('${dateStr}')">
-                            <i class="fas fa-plus"></i> Добавить время
+                            ${slots.length > 0 ? `<div class="slot-count">${slots.length} слотов</div>` : ''}
                         </div>
-                    </div>
-                    <div class="day-actions">
-                        <button class="btn btn-sm btn-outline" onclick="copySlots('${dateStr}')">
-                            <i class="fas fa-copy"></i> Копировать
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="clearDaySlots('${dateStr}')">
-                            <i class="fas fa-trash"></i> Очистить день
-                        </button>
-                    </div>
-                `;
-                grid.appendChild(card);
+                        <div class="time-slots" id="slots-${dateStr}">
+                            ${slots.map(time => `
+                                <div class="time-slot active">
+                                    ${time}
+                                    <button class="remove-slot" onclick="app.removeSlot('${dateStr}', '${time}', event)" title="Удалить">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            `).join('')}
+                            <div class="add-slot-btn" onclick="app.openAddSlotModal('${dateStr}')">
+                                <i class="fas fa-plus"></i> Добавить
+                            </div>
+                        </div>
+                        <div class="day-actions">
+                            <button class="btn btn-sm btn-outline" onclick="app.copySlots('${dateStr}')">
+                                <i class="fas fa-copy"></i> Копировать
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="app.clearDaySlots('${dateStr}')">
+                                <i class="fas fa-trash"></i> Очистить
+                            </button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                    
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+            },
+
+            // Открытие модального окна добавления слота
+            openAddSlotModal(dateStr) {
+                this.pendingSlotDate = dateStr;
+                document.getElementById('modal-add-slot').classList.add('active');
+            },
+
+            // Закрытие модального окна
+            closeModal(modalId) {
+                document.getElementById('modal-' + modalId).classList.remove('active');
+                this.pendingSlotDate = null;
+            },
+
+            // Подтверждение добавления слота
+            confirmAddSlot() {
+                if (!this.pendingSlotDate) return;
+                const time = document.getElementById('new-slot-time').value;
+                this.addTimeSlot(this.pendingSlotDate, time);
+                this.closeModal('add-slot');
+                document.getElementById('new-slot-time').value = '10:00';
+            },
+
+            // Добавление слота
+            addTimeSlot(dateStr, time) {
+                if (!time || !/^\d{2}:\d{2}$/.test(time)) {
+                    this.showAlert('Некорректное время. Используйте формат ЧЧ:ММ', 'error');
+                    return;
+                }
                 
+                if (!this.availability[dateStr]) this.availability[dateStr] = [];
+                if (!this.availability[dateStr].includes(time)) {
+                    this.availability[dateStr].push(time);
+                    this.availability[dateStr].sort();
+                    this.renderDays();
+                    this.showAlert('Время добавлено', 'success');
+                } else {
+                    this.showAlert('Это время уже добавлено', 'error');
+                }
+            },
+
+            // Удаление слота
+            removeSlot(dateStr, time, event) {
+                event.stopPropagation();
+                if (!confirm(`Удалить слот ${time} на ${this.formatDate(dateStr)}?`)) return;
+                
+                if (this.availability[dateStr]) {
+                    this.availability[dateStr] = this.availability[dateStr].filter(t => t !== time);
+                    if (this.availability[dateStr].length === 0) {
+                        delete this.availability[dateStr];
+                    }
+                    this.renderDays();
+                    this.showAlert('Слот удалён', 'success');
+                }
+            },
+
+            // Копирование слотов на неделю вперёд
+            copySlots(dateStr) {
+                const slots = this.availability[dateStr] || [];
+                if (slots.length === 0) {
+                    this.showAlert('Нет слотов для копирования', 'error');
+                    return;
+                }
+                
+                const startDate = new Date(dateStr);
+                const endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + 7);
+                
+                let currentDate = new Date(startDate);
                 currentDate.setDate(currentDate.getDate() + 1);
-            }
-        }
-
-        window.openAddSlotModal = function(dateStr) {
-            pendingSlotDate = dateStr;
-            document.getElementById('modal-add-slot').classList.add('active');
-        };
-
-        window.closeModal = function(modalId) {
-            document.getElementById('modal-' + modalId).classList.remove('active');
-            pendingSlotDate = null;
-        };
-
-        window.confirmAddSlot = function() {
-            if (!pendingSlotDate) return;
-            
-            const time = document.getElementById('new-slot-time').value;
-            addTimeSlot(pendingSlotDate, time);
-            closeModal('add-slot');
-            document.getElementById('new-slot-time').value = '10:00';
-        };
-
-        window.addTimeSlot = function(dateStr, time) {
-            if (!time || !/^\d{2}:\d{2}$/.test(time)) {
-                showAlert('Некорректное время. Используйте формат ЧЧ:ММ', 'error');
-                return;
-            }
-            
-            if (!availability[dateStr]) availability[dateStr] = [];
-            if (!availability[dateStr].includes(time)) {
-                availability[dateStr].push(time);
-                availability[dateStr].sort();
-                renderDays();
-                showAlert('Время добавлено', 'success');
-            } else {
-                showAlert('Это время уже добавлено', 'error');
-            }
-        };
-
-        window.removeSlot = function(dateStr, time, event) {
-            event.stopPropagation();
-            if (!confirm(`Удалить слот ${time} на ${formatDate(dateStr)}?`)) return;
-            
-            if (availability[dateStr]) {
-                availability[dateStr] = availability[dateStr].filter(t => t !== time);
-                if (availability[dateStr].length === 0) {
-                    delete availability[dateStr];
-                }
-                renderDays();
-                showAlert('Слот удалён', 'success');
-            }
-        };
-
-        window.copySlots = function(dateStr) {
-            const slots = availability[dateStr] || [];
-            if (slots.length === 0) {
-                showAlert('Нет слотов для копирования', 'error');
-                return;
-            }
-            
-            const startDate = new Date(dateStr);
-            const endDate = new Date(startDate);
-            endDate.setDate(endDate.getDate() + 7);
-            
-            let currentDate = new Date(startDate);
-            currentDate.setDate(currentDate.getDate() + 1);
-            
-            let copied = 0;
-            while (currentDate <= endDate) {
-                const targetDateStr = currentDate.toISOString().split('T')[0];
-                if (targetDateStr !== dateStr) {
-                    availability[targetDateStr] = [...slots];
-                    copied++;
-                }
-                currentDate.setDate(currentDate.getDate() + 1);
-            }
-            
-            renderDays();
-            showAlert(`Скопировано на ${copied} дней вперёд`, 'success');
-        };
-
-        window.clearDaySlots = function(dateStr) {
-            if (!confirm(`Очистить все слоты на ${formatDate(dateStr)}?`)) return;
-            
-            delete availability[dateStr];
-            renderDays();
-            showAlert('День очищен', 'success');
-        };
-
-        window.addTimeSlotToAll = function(time) {
-            if (!confirm(`Добавить ${time} ко всем дням на ${currentPeriod} дней?`)) return;
-            
-            const today = new Date();
-            const endDate = new Date(today);
-            endDate.setDate(endDate.getDate() + currentPeriod);
-            
-            let currentDate = new Date(today);
-            let added = 0;
-            
-            while (currentDate <= endDate) {
-                const dateStr = currentDate.toISOString().split('T')[0];
-                if (!availability[dateStr]) availability[dateStr] = [];
-                if (!availability[dateStr].includes(time)) {
-                    availability[dateStr].push(time);
-                    availability[dateStr].sort();
-                    added++;
-                }
-                currentDate.setDate(currentDate.getDate() + 1);
-            }
-            
-            renderDays();
-            showAlert(`Добавлено ${time} на ${added} дней`, 'success');
-        };
-
-        window.copyFromPreviousWeek = function() {
-            const today = new Date();
-            const prevWeekStart = new Date(today);
-            prevWeekStart.setDate(prevWeekStart.getDate() - 7);
-            
-            let copied = 0;
-            
-            for (let i = 0; i < 7; i++) {
-                const prevDate = new Date(prevWeekStart);
-                prevDate.setDate(prevDate.getDate() + i);
-                const prevDateStr = prevDate.toISOString().split('T')[0];
                 
-                const currDate = new Date(today);
-                currDate.setDate(currDate.getDate() + i);
-                const currDateStr = currDate.toISOString().split('T')[0];
-                
-                if (availability[prevDateStr] && availability[prevDateStr].length > 0) {
-                    availability[currDateStr] = [...availability[prevDateStr]];
-                    copied++;
+                let copied = 0;
+                while (currentDate <= endDate) {
+                    const targetDateStr = currentDate.toISOString().split('T')[0];
+                    if (targetDateStr !== dateStr) {
+                        this.availability[targetDateStr] = [...slots];
+                        copied++;
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
                 }
-            }
-            
-            renderDays();
-            showAlert(`Скопировано с прошлой недели (${copied} дней)`, 'success');
-        };
-
-        window.clearAllSlots = function() {
-            if (!confirm('Вы уверены? Это удалит ВСЮ вашу доступность!')) return;
-            
-            availability = {};
-            renderDays();
-            showAlert('Вся доступность очищена', 'success');
-        };
-
-        window.saveAvailability = async function() {
-            const btn = event.target;
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Сохранение...';
-            
-            try {
-                await setDoc(doc(db, 'teachers', currentUser.uid), {
-                    name: currentUser.name,
-                    email: currentUser.email,
-                    phone: currentUser.phone,
-                    availability,
-                    status: 'active',
-                    updatedAt: new Date().toISOString()
-                }, { merge: true });
                 
-                showAlert('Доступность сохранена!', 'success');
-            } catch (error) {
-                showAlert('Ошибка: ' + error.message, 'error');
-            }
-            
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-save"></i> Сохранить доступность';
-        };
+                this.renderDays();
+                this.showAlert(`Скопировано на ${copied} дней вперёд`, 'success');
+            },
 
-        async function loadBookings() {
-            const bookingsRef = collection(db, 'bookings');
-            const q = query(bookingsRef, where('teacherId', '==', currentUser.uid));
-            const snapshot = await getDocs(q);
-            
-            const tbody = document.getElementById('bookings-list');
-            tbody.innerHTML = '';
-            
-            if (snapshot.empty) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Пока нет записей</td></tr>';
-                return;
-            }
-            
-            const bookings = [];
-            snapshot.forEach(doc => bookings.push({ id: doc.id, ...doc.data() }));
-            
-            bookings.sort((a, b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time));
-            
-            bookings.forEach(booking => {
-                const tr = document.createElement('tr');
-                const statusClass = `badge-${booking.status}`;
-                const statusText = booking.status === 'confirmed' ? 'Подтверждено' : 
-                                   booking.status === 'pending' ? 'Ожидает' : 'Отменено';
+            // Очистка дня
+            clearDaySlots(dateStr) {
+                if (!confirm(`Очистить все слоты на ${this.formatDate(dateStr)}?`)) return;
+                delete this.availability[dateStr];
+                this.renderDays();
+                this.showAlert('День очищен', 'success');
+            },
+
+            // Добавить время ко всем дням
+            addTimeSlotToAll(time) {
+                if (!confirm(`Добавить ${time} ко всем дням на ${this.currentPeriod} дней?`)) return;
                 
-                tr.innerHTML = `
-                    <td>
-                        ${booking.studentName}<br>
-                        <small style="color: #666;">${booking.studentEmail}</small>
-                    </td>
-                    <td>${booking.studentPhone}</td>
-                    <td>${formatDate(booking.date)}</td>
-                    <td>${booking.time}</td>
-                    <td><span class="badge ${statusClass}">${statusText}</span></td>
-                    <td>
-                        ${booking.status === 'pending' ? `
-                            <button class="btn btn-success btn-sm" onclick="confirmBooking('${booking.id}')"><i class="fas fa-check"></i></button>
-                            <button class="btn btn-danger btn-sm" onclick="cancelBooking('${booking.id}')"><i class="fas fa-times"></i></button>
-                        ` : booking.status === 'confirmed' ? `
-                            <button class="btn btn-danger btn-sm" onclick="cancelBooking('${booking.id}')">Отменить</button>
-                        ` : '—'}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+                const today = new Date();
+                const endDate = new Date(today);
+                endDate.setDate(endDate.getDate() + this.currentPeriod);
+                
+                let currentDate = new Date(today);
+                let added = 0;
+                
+                while (currentDate <= endDate) {
+                    const dateStr = currentDate.toISOString().split('T')[0];
+                    if (!this.availability[dateStr]) this.availability[dateStr] = [];
+                    if (!this.availability[dateStr].includes(time)) {
+                        this.availability[dateStr].push(time);
+                        this.availability[dateStr].sort();
+                        added++;
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+                
+                this.renderDays();
+                this.showAlert(`Добавлено ${time} на ${added} дней`, 'success');
+            },
 
-        window.confirmBooking = async function(bookingId) {
-            if (!confirm('Подтвердить запись?')) return;
-            
-            try {
-                await updateDoc(doc(db, 'bookings', bookingId), {
-                    status: 'confirmed',
-                    confirmedAt: new Date().toISOString()
+            // Копировать с прошлой недели
+            copyFromPreviousWeek() {
+                const today = new Date();
+                const prevWeekStart = new Date(today);
+                prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+                
+                let copied = 0;
+                
+                for (let i = 0; i < 7; i++) {
+                    const prevDate = new Date(prevWeekStart);
+                    prevDate.setDate(prevDate.getDate() + i);
+                    const prevDateStr = prevDate.toISOString().split('T')[0];
+                    
+                    const currDate = new Date(today);
+                    currDate.setDate(currDate.getDate() + i);
+                    const currDateStr = currDate.toISOString().split('T')[0];
+                    
+                    if (this.availability[prevDateStr] && this.availability[prevDateStr].length > 0) {
+                        this.availability[currDateStr] = [...this.availability[prevDateStr]];
+                        copied++;
+                    }
+                }
+                
+                this.renderDays();
+                this.showAlert(`Скопировано с прошлой недели (${copied} дней)`, 'success');
+            },
+
+            // Очистить всё
+            clearAllSlots() {
+                if (!confirm('Вы уверены? Это удалит ВСЮ вашу доступность!')) return;
+                this.availability = {};
+                this.renderDays();
+                this.showAlert('Вся доступность очищена', 'success');
+            },
+
+            // Сохранение доступности
+            async saveAvailability() {
+                const btn = document.getElementById('save-availability-btn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner"></span> Сохранение...';
+                
+                try {
+                    await this.withTimeout(
+                        setDoc(doc(this.db, 'teachers', this.user.uid), {
+                            name: this.user.name,
+                            email: this.user.email,
+                            phone: this.user.phone,
+                            availability: this.availability,
+                            status: 'active',
+                            updatedAt: new Date().toISOString()
+                        }, { merge: true }),
+                        5000,
+                        'Таймаут сохранения'
+                    );
+                    
+                    this.showAlert('Доступность сохранена!', 'success');
+                } catch (error) {
+                    console.error('Ошибка сохранения:', error);
+                    this.showAlert('Ошибка: ' + error.message, 'error');
+                }
+                
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Сохранить доступность';
+            },
+
+            // Загрузка записей
+            async loadBookings() {
+                const tbody = document.getElementById('bookings-list');
+                tbody.innerHTML = '<tr><td colspan="6" class="loading">Загрузка...</td></tr>';
+
+                try {
+                    const bookingsRef = collection(this.db, 'bookings');
+                    const q = query(bookingsRef, where('teacherId', '==', this.user.uid));
+                    const snapshot = await this.withTimeout(
+                        getDocs(q),
+                        5000,
+                        'Таймаут'
+                    );
+                    
+                    if (snapshot.empty) {
+                        tbody.innerHTML = '<tr><td colspan="6" class="empty">Пока нет записей</td></tr>';
+                        return;
+                    }
+                    
+                    const bookings = [];
+                    snapshot.forEach(doc => bookings.push({ id: doc.id, ...doc.data() }));
+                    bookings.sort((a, b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time));
+                    
+                    tbody.innerHTML = '';
+                    bookings.forEach(booking => {
+                        const tr = document.createElement('tr');
+                        const statusClass = `badge-${booking.status}`;
+                        const statusText = {
+                            confirmed: 'Подтверждено',
+                            pending: 'Ожидает',
+                            cancelled: 'Отменено'
+                        }[booking.status] || booking.status;
+                        
+                        tr.innerHTML = `
+                            <td>
+                                ${booking.studentName}<br>
+                                <small style="color: #666;">${booking.studentEmail}</small>
+                            </td>
+                            <td>${booking.studentPhone}</td>
+                            <td>${this.formatDate(booking.date)}</td>
+                            <td>${booking.time}</td>
+                            <td><span class="badge ${statusClass}">${statusText}</span></td>
+                            <td>
+                                ${booking.status === 'pending' ? `
+                                    <button class="btn btn-success btn-sm" onclick="app.confirmBooking('${booking.id}')"><i class="fas fa-check"></i></button>
+                                    <button class="btn btn-danger btn-sm" onclick="app.cancelBooking('${booking.id}')"><i class="fas fa-times"></i></button>
+                                ` : booking.status === 'confirmed' ? `
+                                    <button class="btn btn-danger btn-sm" onclick="app.cancelBooking('${booking.id}')">Отменить</button>
+                                ` : '—'}
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } catch (error) {
+                    console.error('Ошибка:', error);
+                    tbody.innerHTML = '<tr><td colspan="6" class="empty">Ошибка загрузки</td></tr>';
+                }
+            },
+
+            // Подтверждение записи
+            async confirmBooking(bookingId) {
+                if (!confirm('Подтвердить запись?')) return;
+                try {
+                    await updateDoc(doc(this.db, 'bookings', bookingId), {
+                        status: 'confirmed',
+                        confirmedAt: new Date().toISOString()
+                    });
+                    this.showAlert('Запись подтверждена', 'success');
+                    await this.loadBookings();
+                } catch (error) {
+                    this.showAlert('Ошибка: ' + error.message, 'error');
+                }
+            },
+
+            // Отмена записи
+            async cancelBooking(bookingId) {
+                if (!confirm('Отменить запись?')) return;
+                try {
+                    await updateDoc(doc(this.db, 'bookings', bookingId), {
+                        status: 'cancelled',
+                        cancelledAt: new Date().toISOString()
+                    });
+                    this.showAlert('Запись отменена', 'success');
+                    await this.loadBookings();
+                } catch (error) {
+                    this.showAlert('Ошибка: ' + error.message, 'error');
+                }
+            },
+
+            // Утилита: таймаут
+            withTimeout(promise, ms, errorMessage) {
+                return Promise.race([
+                    promise,
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error(errorMessage)), ms)
+                    )
+                ]);
+            },
+
+            // Форматирование даты
+            formatDate(dateStr) {
+                if (!dateStr) return '';
+                return new Date(dateStr).toLocaleDateString('ru-RU', {
+                    day: 'numeric', month: 'long', year: 'numeric'
                 });
-                showAlert('Запись подтверждена', 'success');
-                await loadBookings();
-            } catch (error) {
-                showAlert('Ошибка: ' + error.message, 'error');
-            }
-        };
+            },
 
-        window.cancelBooking = async function(bookingId) {
-            if (!confirm('Отменить запись?')) return;
-            
-            try {
-                await updateDoc(doc(db, 'bookings', bookingId), {
-                    status: 'cancelled',
-                    cancelledAt: new Date().toISOString()
-                });
-                showAlert('Запись отменена', 'success');
-                await loadBookings();
-            } catch (error) {
-                showAlert('Ошибка: ' + error.message, 'error');
-            }
-        };
+            // Capitalize first letter
+            capitalizeFirst(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            },
 
-        function formatDate(dateStr) {
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
-        }
-
-        function capitalizeFirst(string) {
-            return string.charAt(0).toUpperCase() + string.slice(1);
-        }
-
-        function showAlert(message, type) {
-            const errorAlert = document.getElementById('alert-error');
-            const successAlert = document.getElementById('alert-success');
-            
-            errorAlert.style.display = 'none';
-            successAlert.style.display = 'none';
-            
-            if (type === 'error') {
-                errorAlert.textContent = message;
-                errorAlert.style.display = 'block';
-            } else {
-                successAlert.textContent = message;
-                successAlert.style.display = 'block';
-            }
-            
-            setTimeout(() => {
+            // Показать уведомление
+            showAlert(message, type) {
+                const errorAlert = document.getElementById('alert-error');
+                const successAlert = document.getElementById('alert-success');
+                
                 errorAlert.style.display = 'none';
                 successAlert.style.display = 'none';
-            }, 5000);
-        }
+                
+                if (type === 'error') {
+                    errorAlert.textContent = message;
+                    errorAlert.style.display = 'block';
+                } else {
+                    successAlert.textContent = message;
+                    successAlert.style.display = 'block';
+                }
+                
+                setTimeout(() => {
+                    errorAlert.style.display = 'none';
+                    successAlert.style.display = 'none';
+                }, 5000);
+            }
+        };
 
-        // Make functions available globally
-        window.logout = logout;
-        window.changePeriod = changePeriod;
-        window.openAddSlotModal = openAddSlotModal;
-        window.closeModal = closeModal;
-        window.confirmAddSlot = confirmAddSlot;
-        window.removeSlot = removeSlot;
-        window.copySlots = copySlots;
-        window.clearDaySlots = clearDaySlots;
-        window.addTimeSlotToAll = addTimeSlotToAll;
-        window.copyFromPreviousWeek = copyFromPreviousWeek;
-        window.clearAllSlots = clearAllSlots;
-        window.saveAvailability = saveAvailability;
-        window.confirmBooking = confirmBooking;
-        window.cancelBooking = cancelBooking;
+        // === ЗАПУСК ===
+        app.init();
+        window.app = app;
     </script>
 </body>
 </html>
