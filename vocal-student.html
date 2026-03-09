@@ -111,6 +111,34 @@
         .loading { text-align: center; padding: 2rem; color: #666; }
         .empty { text-align: center; padding: 2rem; color: #999; }
         
+        /* Status screens */
+        .status-screen {
+            display: none;
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+        .status-screen.active { display: block; }
+        .status-screen i { font-size: 4rem; margin-bottom: 1rem; }
+        .status-screen.pending i { color: #c5a059; }
+        .status-screen.rejected i { color: #c41e3a; }
+        .status-screen h2 { color: #1a2c42; margin-bottom: 1rem; }
+        .status-screen p { color: #666; margin-bottom: 1.5rem; }
+        .status-screen .info-box {
+            background: #fff3cd;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            color: #856404;
+        }
+        .status-screen .reason-box {
+            background: #f8d7da;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            color: #721c24;
+            text-align: left;
+        }
+        
         @media (max-width: 768px) {
             .header { flex-direction: column; text-align: center; }
             .main { padding: 1rem; }
@@ -131,66 +159,97 @@
     </header>
 
     <main class="main">
-        <div class="alert alert-error" id="alert-error"></div>
-        <div class="alert alert-success" id="alert-success"></div>
-
-        <!-- Booking Form -->
-        <div class="card">
-            <h2><i class="fas fa-calendar-plus"></i> Записаться на занятие</h2>
-            
-            <div class="form-group">
-                <label>Преподаватель</label>
-                <select id="teacher-select" onchange="app.loadAvailableDates()">
-                    <option value="">Выберите преподавателя</option>
-                </select>
+        <!-- Status Screens -->
+        <div class="card status-screen pending" id="pending-screen">
+            <i class="fas fa-hourglass-half"></i>
+            <h2>Ожидание подтверждения</h2>
+            <p>Ваш аккаунт ожидает подтверждения администратором.</p>
+            <div class="info-box">
+                <i class="fas fa-clock"></i> Обычно подтверждение занимает до 24 часов
             </div>
-            
-            <div class="form-group">
-                <label>Дата</label>
-                <select id="date-select" onchange="app.loadAvailableSlots()" disabled>
-                    <option value="">Сначала выберите преподавателя</option>
-                </select>
-            </div>
-            
-            <div id="slots-container" style="display: none;">
-                <label style="font-weight: 600; color: #1a2c42; display: block; margin-bottom: 0.5rem;">
-                    Доступное время
-                </label>
-                <div class="slots-grid" id="slots-grid"></div>
-            </div>
-            
-            <div class="form-group" style="margin-top: 1.5rem;">
-                <label>Комментарий (необязательно)</label>
-                <input type="text" id="booking-comment" placeholder="Например: хочу разучить песню">
-            </div>
-            
-            <button class="btn btn-accent" onclick="app.submitBooking()" id="book-btn">
-                <i class="fas fa-check"></i> Записаться
+            <p style="color: #999; font-size: 0.9rem;"></p>
+            <button class="btn btn-primary" onclick="window.location.href='index.html'">
+                <i class="fas fa-home"></i> На сайт церкви
             </button>
         </div>
 
-        <!-- My Bookings -->
-        <div class="card">
-            <h2><i class="fas fa-calendar-check"></i> Мои записи</h2>
-            <div id="bookings-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Дата</th>
-                            <th>Время</th>
-                            <th>Преподаватель</th>
-                            <th>Статус</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bookings-list"></tbody>
-                </table>
+        <div class="card status-screen rejected" id="rejected-screen">
+            <i class="fas fa-times-circle"></i>
+            <h2>Заявка отклонена</h2>
+            <p>К сожалению, ваша заявка была отклонена.</p>
+            <div class="reason-box">
+                <strong>Причина:</strong>
+                <p id="rejection-reason" style="margin: 0.5rem 0 0;"></p>
+            </div>
+            <p style="color: #999; font-size: 0.9rem;">Если вы считаете, что это ошибка, свяжитесь с администратором.</p>
+            <button class="btn btn-primary" onclick="window.location.href='index.html'">
+                <i class="fas fa-home"></i> На сайт церкви
+            </button>
+        </div>
+
+        <!-- Main Content (shown when active) -->
+        <div id="main-content" style="display: none;">
+            <div class="alert alert-error" id="alert-error"></div>
+            <div class="alert alert-success" id="alert-success"></div>
+
+            <!-- Booking Form -->
+            <div class="card">
+                <h2><i class="fas fa-calendar-plus"></i> Записаться на занятие</h2>
+                
+                <div class="form-group">
+                    <label>Преподаватель</label>
+                    <select id="teacher-select" onchange="app.loadAvailableDates()">
+                        <option value="">Выберите преподавателя</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Дата</label>
+                    <select id="date-select" onchange="app.loadAvailableSlots()" disabled>
+                        <option value="">Сначала выберите преподавателя</option>
+                    </select>
+                </div>
+                
+                <div id="slots-container" style="display: none;">
+                    <label style="font-weight: 600; color: #1a2c42; display: block; margin-bottom: 0.5rem;">
+                        Доступное время
+                    </label>
+                    <div class="slots-grid" id="slots-grid"></div>
+                </div>
+                
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label>Комментарий (необязательно)</label>
+                    <input type="text" id="booking-comment" placeholder="Например: хочу разучить песню">
+                </div>
+                
+                <button class="btn btn-accent" onclick="app.submitBooking()" id="book-btn">
+                    <i class="fas fa-check"></i> Записаться
+                </button>
+            </div>
+
+            <!-- My Bookings -->
+            <div class="card">
+                <h2><i class="fas fa-calendar-check"></i> Мои записи</h2>
+                <div id="bookings-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Время</th>
+                                <th>Преподаватель</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookings-list"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </main>
 
     <script type="module">
-        // === FIREBASE IMPORTS ===
+        // === FIREBASE IMPORTS (clean URLs) ===
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, doc, getDoc, collection, getDocs, addDoc, query, where, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
@@ -205,7 +264,7 @@
             appId: "1:1014321374210:web:f228e994505553c741b31b"
         };
 
-        // === APP OBJECT - все функции внутри одного объекта ===
+        // === APP OBJECT ===
         const app = {
             auth: null,
             db: null,
@@ -215,7 +274,7 @@
 
             // Инициализация
             async init() {
-                console.log('🚀 Инициализация приложения...');
+                console.log('🚀 Инициализация vocal-student...');
                 
                 try {
                     const firebaseApp = initializeApp(firebaseConfig);
@@ -228,59 +287,70 @@
                     return;
                 }
 
-                // Подписываемся на изменения авторизации (ТОЛЬКО ОДИН РАЗ)
                 onAuthStateChanged(this.auth, async (user) => {
                     await this.handleAuthChange(user);
                 });
 
-                console.log('✅ Приложение готово');
+                console.log('✅ vocal-student готов');
             },
 
-            // Обработка изменения авторизации
+            // Обработка авторизации
             async handleAuthChange(user) {
                 console.log('🔄 Auth change:', user ? user.email : 'null');
                 
-                if (this.initialized) {
-                    console.log('✅ Уже инициализировано, пропускаем');
-                    return;
-                }
+                if (this.initialized) return;
 
                 if (!user) {
-                    console.log('❌ Нет пользователя → редирект на login');
+                    console.log('❌ Нет пользователя → редирект');
                     window.location.href = 'vocal-login.html';
                     return;
                 }
 
                 try {
-                    // Загружаем данные пользователя с таймаутом
-                    const userData = await this.withTimeout(
+                    const userDoc = await this.withTimeout(
                         getDoc(doc(this.db, 'users', user.uid)),
                         5000,
                         'Таймаут загрузки профиля'
                     );
 
-                    if (!userData.exists()) {
-                        throw new Error('Профиль не найден');
+                    if (!userDoc.exists()) throw new Error('Профиль не найден');
+                    
+                    const data = userDoc.data();
+                    console.log('📄 Данные:', data);
+
+                    // Проверка типа пользователя
+                    if (data.type !== 'student') {
+                        console.log('❌ Не студент (тип: ' + data.type + ') → редирект');
+                        if (data.type === 'admin') {
+                            window.location.href = 'vocal-admin.html';
+                        } else if (data.type === 'teacher') {
+                            window.location.href = 'vocal-teacher.html';
+                        } else {
+                            window.location.href = 'vocal-login.html';
+                        }
+                        return;
                     }
 
-                    const data = userData.data();
-                    
-                    // СТАЛО (правильно):
-if (data.type !== 'student') {
-    console.log('❌ Не студент (тип: ' + data.type + ') → редирект');
-    
-    // Перенаправляем на правильный кабинет
-    if (data.type === 'admin') {
-        window.location.href = 'vocal-admin.html';
-    } else if (data.type === 'teacher') {
-        window.location.href = 'vocal-teacher.html';
-    } else {
-        window.location.href = 'vocal-login.html';
-    }
-    return;
-}
+                    // Проверка статуса
+                    if (data.status === 'pending') {
+                        this.showPendingScreen();
+                        this.initialized = true;
+                        return;
+                    }
 
-                    // Сохраняем пользователя
+                    if (data.status === 'rejected') {
+                        this.showRejectedScreen(data.rejectionReason || 'Не указано');
+                        this.initialized = true;
+                        return;
+                    }
+
+                    if (data.status === 'blocked') {
+                        this.showAlert('Ваш аккаунт заблокирован', 'error');
+                        await this.logout();
+                        return;
+                    }
+
+                    // Активный пользователь — показываем интерфейс
                     this.user = {
                         uid: user.uid,
                         email: user.email,
@@ -290,10 +360,9 @@ if (data.type !== 'student') {
                     };
                     localStorage.setItem('user', JSON.stringify(this.user));
 
-                    // Обновляем интерфейс
                     document.getElementById('user-name').textContent = this.user.name;
+                    document.getElementById('main-content').style.display = 'block';
                     
-                    // Загружаем данные
                     await Promise.all([
                         this.loadTeachers(),
                         this.loadMyBookings()
@@ -303,10 +372,24 @@ if (data.type !== 'student') {
                     console.log('✅ Инициализация завершена');
 
                 } catch (error) {
-                    console.error('❌ Ошибка инициализации:', error);
+                    console.error('❌ Ошибка:', error);
                     this.showAlert('Ошибка: ' + error.message, 'error');
-                    // Не делаем редирект сразу, даём пользователю увидеть ошибку
                 }
+            },
+
+            // Показать экран ожидания
+            showPendingScreen() {
+                document.getElementById('main-content').style.display = 'none';
+                document.getElementById('pending-screen').classList.add('active');
+                document.getElementById('rejected-screen').classList.remove('active');
+            },
+
+            // Показать экран отклонения
+            showRejectedScreen(reason) {
+                document.getElementById('main-content').style.display = 'none';
+                document.getElementById('pending-screen').classList.remove('active');
+                document.getElementById('rejected-screen').classList.add('active');
+                document.getElementById('rejection-reason').textContent = reason;
             },
 
             // Выход
@@ -326,7 +409,7 @@ if (data.type !== 'student') {
                     const snapshot = await this.withTimeout(
                         getDocs(collection(this.db, 'teachers')),
                         5000,
-                        'Таймаут загрузки преподавателей'
+                        'Таймаут'
                     );
 
                     const select = document.getElementById('teacher-select');
@@ -342,7 +425,7 @@ if (data.type !== 'student') {
                         }
                     });
                 } catch (error) {
-                    console.error('Ошибка загрузки преподавателей:', error);
+                    console.error('Ошибка:', error);
                     this.showAlert('Не удалось загрузить преподавателей', 'error');
                 }
             },
@@ -415,7 +498,6 @@ if (data.type !== 'student') {
                 grid.innerHTML = '<div class="loading">Загрузка...</div>';
 
                 try {
-                    // Получаем доступные слоты
                     const teacherDoc = await this.withTimeout(
                         getDoc(doc(this.db, 'teachers', teacherId)),
                         5000,
@@ -424,7 +506,6 @@ if (data.type !== 'student') {
                     const availability = teacherDoc.data().availability || {};
                     const availableSlots = availability[date] || [];
 
-                    // Получаем занятые слоты
                     const bookingsRef = collection(this.db, 'bookings');
                     const q = query(
                         bookingsRef,
@@ -440,7 +521,6 @@ if (data.type !== 'student') {
                     const bookedSlots = [];
                     snapshot.forEach(d => bookedSlots.push(d.data().time));
 
-                    // Рендерим слоты
                     grid.innerHTML = '';
                     
                     if (availableSlots.length === 0) {
@@ -491,11 +571,9 @@ if (data.type !== 'student') {
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
                 try {
-                    // Получаем имя преподавателя
                     const teacherDoc = await getDoc(doc(this.db, 'teachers', teacherId));
                     const teacherName = teacherDoc.data().name;
 
-                    // Создаём запись
                     await addDoc(collection(this.db, 'bookings'), {
                         studentId: this.user.uid,
                         studentName: this.user.name,
@@ -512,7 +590,6 @@ if (data.type !== 'student') {
 
                     this.showAlert('Заявка отправлена! Преподаватель подтвердит запись.', 'success');
 
-                    // Сброс формы
                     document.getElementById('teacher-select').value = '';
                     document.getElementById('date-select').innerHTML = '<option value="">Сначала выберите преподавателя</option>';
                     document.getElementById('date-select').disabled = true;
@@ -602,7 +679,7 @@ if (data.type !== 'student') {
                 }
             },
 
-            // Утилита: таймаут для Promise
+            // Утилита: таймаут
             withTimeout(promise, ms, errorMessage) {
                 return Promise.race([
                     promise,
@@ -616,9 +693,7 @@ if (data.type !== 'student') {
             formatDate(dateStr) {
                 if (!dateStr) return '';
                 return new Date(dateStr).toLocaleDateString('ru-RU', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
+                    day: 'numeric', month: 'long', year: 'numeric'
                 });
             },
 
@@ -626,10 +701,10 @@ if (data.type !== 'student') {
             showAlert(message, type) {
                 const errorAlert = document.getElementById('alert-error');
                 const successAlert = document.getElementById('alert-success');
-
+                
                 errorAlert.style.display = 'none';
                 successAlert.style.display = 'none';
-
+                
                 if (type === 'error') {
                     errorAlert.textContent = message;
                     errorAlert.style.display = 'block';
@@ -637,7 +712,7 @@ if (data.type !== 'student') {
                     successAlert.textContent = message;
                     successAlert.style.display = 'block';
                 }
-
+                
                 setTimeout(() => {
                     errorAlert.style.display = 'none';
                     successAlert.style.display = 'none';
@@ -645,12 +720,9 @@ if (data.type !== 'student') {
             }
         };
 
-        // === ЗАПУСК ПРИЛОЖЕНИЯ ===
+        // === ЗАПУСК ===
         app.init();
-
-        // Делаем публичные методы доступными из HTML
         window.app = app;
     </script>
 </body>
 </html>
-
