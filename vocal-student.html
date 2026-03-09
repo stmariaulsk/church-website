@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кабинет студента | Вокал</title>
     
     <!-- 🔥 ОТКЛЮЧЕНИЕ КЭШИРОВАНИЯ -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="cache-control" content="no-cache">
-    <title>Кабинет студента | Вокал</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -124,9 +124,9 @@
             padding: 3rem 2rem;
         }
         .status-screen.active { display: block; }
-        .status-screen i { font-size: 4rem; margin-bottom: 1rem; }
         .status-screen.pending i { color: #c5a059; }
         .status-screen.rejected i { color: #c41e3a; }
+        .status-screen i { font-size: 4rem; margin-bottom: 1rem; }
         .status-screen h2 { color: #1a2c42; margin-bottom: 1rem; }
         .status-screen p { color: #666; margin-bottom: 1.5rem; }
         .status-screen .info-box {
@@ -144,6 +144,18 @@
             color: #721c24;
             text-align: left;
         }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0,0,0,0.3);
+            border-radius: 50%;
+            border-top-color: #1a2c42;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
         
         @media (max-width: 768px) {
             .header { flex-direction: column; text-align: center; }
@@ -173,7 +185,7 @@
             <div class="info-box">
                 <i class="fas fa-clock"></i> Обычно подтверждение занимает до 24 часов
             </div>
-            <p style="color: #999; font-size: 0.9rem;"></p>
+            <p style="color: #999; font-size: 0.9rem;">Вы получите уведомление на email после подтверждения.</p>
             <button class="btn btn-primary" onclick="window.location.href='index.html'">
                 <i class="fas fa-home"></i> На сайт церкви
             </button>
@@ -278,17 +290,23 @@
             selectedSlot: null,
             initialized: false,
 
-            // Инициализация
             async init() {
-                console.log('🚀 Инициализация vocal-student...');
+                console.log('🚀 vocal-student init');
+                
+                // 🔥 Очищаем параметр кэша из URL
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('t')) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    console.log('✅ Cache param cleared');
+                }
                 
                 try {
                     const firebaseApp = initializeApp(firebaseConfig);
                     this.auth = getAuth(firebaseApp);
                     this.db = getFirestore(firebaseApp);
-                    console.log('✅ Firebase подключён');
+                    console.log('✅ Firebase ready');
                 } catch (error) {
-                    console.error('❌ Ошибка Firebase:', error);
+                    console.error('❌ Firebase error:', error);
                     this.showAlert('Ошибка подключения к серверу', 'error');
                     return;
                 }
@@ -297,22 +315,27 @@
                     await this.handleAuthChange(user);
                 });
 
-                console.log('✅ vocal-student готов');
+                console.log('✅ vocal-student ready');
             },
 
-            // Обработка авторизации
             async handleAuthChange(user) {
-                console.log('🔄 Auth change:', user ? user.email : 'null');
+                console.log('🔄 Auth state:', user ? user.email : 'null');
                 
-                if (this.initialized) return;
+                if (this.initialized) {
+                    console.log('✅ Already initialized');
+                    return;
+                }
 
                 if (!user) {
-                    console.log('❌ Нет пользователя → редирект');
-                    window.location.href = 'vocal-login.html';
+                    console.log('❌ No user → redirect to login');
+                    window.location.href = 'vocal-login.html?t=' + Date.now();
                     return;
                 }
 
                 try {
+                    // 🔥 Ждём стабильности auth
+                    await new Promise(resolve => setTimeout(resolve, 300));
+
                     const userDoc = await this.withTimeout(
                         getDoc(doc(this.db, 'users', user.uid)),
                         5000,
@@ -322,17 +345,17 @@
                     if (!userDoc.exists()) throw new Error('Профиль не найден');
                     
                     const data = userDoc.data();
-                    console.log('📄 Данные:', data);
+                    console.log('📄 User data:', data);
 
-                    // Проверка типа пользователя
+                    // Проверка типа
                     if (data.type !== 'student') {
-                        console.log('❌ Не студент (тип: ' + data.type + ') → редирект');
+                        console.log('❌ Not student (type: ' + data.type + ') → redirect');
                         if (data.type === 'admin') {
-                            window.location.href = 'vocal-admin.html';
+                            window.location.href = 'vocal-admin.html?t=' + Date.now();
                         } else if (data.type === 'teacher') {
-                            window.location.href = 'vocal-teacher.html';
+                            window.location.href = 'vocal-teacher.html?t=' + Date.now();
                         } else {
-                            window.location.href = 'vocal-login.html';
+                            window.location.href = 'vocal-login.html?t=' + Date.now();
                         }
                         return;
                     }
@@ -356,7 +379,7 @@
                         return;
                     }
 
-                    // Активный пользователь — показываем интерфейс
+                    // Активный студент — показываем интерфейс
                     this.user = {
                         uid: user.uid,
                         email: user.email,
@@ -375,22 +398,23 @@
                     ]);
 
                     this.initialized = true;
-                    console.log('✅ Инициализация завершена');
+                    console.log('✅ Initialization complete');
 
                 } catch (error) {
-                    console.error('❌ Ошибка:', error);
+                    console.error('❌ Error:', error);
                     this.showAlert('Ошибка: ' + error.message, 'error');
+                    // 🔥 При ошибке — редирект с очисткой
+                    localStorage.removeItem('user');
+                    window.location.href = 'vocal-login.html?t=' + Date.now();
                 }
             },
 
-            // Показать экран ожидания
             showPendingScreen() {
                 document.getElementById('main-content').style.display = 'none';
                 document.getElementById('pending-screen').classList.add('active');
                 document.getElementById('rejected-screen').classList.remove('active');
             },
 
-            // Показать экран отклонения
             showRejectedScreen(reason) {
                 document.getElementById('main-content').style.display = 'none';
                 document.getElementById('pending-screen').classList.remove('active');
@@ -398,18 +422,16 @@
                 document.getElementById('rejection-reason').textContent = reason;
             },
 
-            // Выход
             async logout() {
                 try {
                     await signOut(this.auth);
                     localStorage.removeItem('user');
-                    window.location.href = 'vocal-login.html';
+                    window.location.href = 'vocal-login.html?t=' + Date.now();
                 } catch (error) {
                     this.showAlert('Ошибка выхода: ' + error.message, 'error');
                 }
             },
 
-            // Загрузка преподавателей
             async loadTeachers() {
                 try {
                     const snapshot = await this.withTimeout(
@@ -431,12 +453,11 @@
                         }
                     });
                 } catch (error) {
-                    console.error('Ошибка:', error);
+                    console.error('Ошибка загрузки преподавателей:', error);
                     this.showAlert('Не удалось загрузить преподавателей', 'error');
                 }
             },
 
-            // Загрузка доступных дат
             async loadAvailableDates() {
                 const teacherId = document.getElementById('teacher-select').value;
                 const dateSelect = document.getElementById('date-select');
@@ -488,7 +509,6 @@
                 }
             },
 
-            // Загрузка доступных слотов
             async loadAvailableSlots() {
                 const teacherId = document.getElementById('teacher-select').value;
                 const date = document.getElementById('date-select').value;
@@ -554,14 +574,12 @@
                 }
             },
 
-            // Выбор слота
             selectSlot(element, time) {
                 document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
                 element.classList.add('selected');
                 this.selectedSlot = time;
             },
 
-            // Отправка записи
             async submitBooking() {
                 const teacherId = document.getElementById('teacher-select').value;
                 const date = document.getElementById('date-select').value;
@@ -574,7 +592,7 @@
 
                 const btn = document.getElementById('book-btn');
                 btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                btn.innerHTML = '<span class="spinner"></span>';
 
                 try {
                     const teacherDoc = await getDoc(doc(this.db, 'teachers', teacherId));
@@ -614,7 +632,6 @@
                 btn.innerHTML = '<i class="fas fa-check"></i> Записаться';
             },
 
-            // Загрузка моих записей
             async loadMyBookings() {
                 const tbody = document.getElementById('bookings-list');
                 tbody.innerHTML = '<tr><td colspan="5" class="loading">Загрузка...</td></tr>';
@@ -669,7 +686,6 @@
                 }
             },
 
-            // Отмена записи
             async cancelBooking(bookingId) {
                 if (!confirm('Вы уверены, что хотите отменить запись?')) return;
 
@@ -685,7 +701,6 @@
                 }
             },
 
-            // Утилита: таймаут
             withTimeout(promise, ms, errorMessage) {
                 return Promise.race([
                     promise,
@@ -695,7 +710,6 @@
                 ]);
             },
 
-            // Форматирование даты
             formatDate(dateStr) {
                 if (!dateStr) return '';
                 return new Date(dateStr).toLocaleDateString('ru-RU', {
@@ -703,7 +717,6 @@
                 });
             },
 
-            // Показать уведомление
             showAlert(message, type) {
                 const errorAlert = document.getElementById('alert-error');
                 const successAlert = document.getElementById('alert-success');
@@ -726,10 +739,9 @@
             }
         };
 
-        // === ЗАПУСК ===
+        // === INIT ===
         app.init();
         window.app = app;
     </script>
 </body>
 </html>
-
